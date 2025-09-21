@@ -441,10 +441,10 @@ const AdminPanel = () => {
   };
 
   const generatePreview = () => {
-    if (!localForm.content) return '<p class="text-gray-500 italic">La vista previa aparecerá aquí...</p>';
+    if (!editorForm.content) return '<p class="text-gray-500 italic">La vista previa aparecerá aquí...</p>';
 
     // Convertir Markdown básico a HTML con mejor formato
-    let html = localForm.content
+    let html = editorForm.content
       // Headers
       .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-6 mb-3 text-gray-800 border-b border-gray-200 pb-1">$1</h3>')
       .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mt-8 mb-4 text-gray-900">$1</h2>')
@@ -705,31 +705,55 @@ const AdminPanel = () => {
     </div>
   );
 
-  // Editor de Artículos
-  const ArticleEditor = () => {
-    // Estado local del editor para evitar conflictos con el estado padre
-    const [localForm, setLocalForm] = useState({
-      title: '',
-      excerpt: '',
-      content: '',
-      category_id: '',
-      status: 'draft',
-      featured_image: '',
-      tags: []
-    });
+  // Funciones de actualización del editor (memoizadas para evitar re-renders)
+  const updateEditorField = useCallback((field, value) => {
+    setEditorForm(prev => ({ ...prev, [field]: value }));
+  }, []);
 
-    // Sincronizar con el estado padre cuando cambie
-    useEffect(() => {
-      setLocalForm({
-        title: editorForm.title || '',
-        excerpt: editorForm.excerpt || '',
-        content: editorForm.content || '',
-        category_id: editorForm.category_id || '',
-        status: editorForm.status || 'draft',
-        featured_image: editorForm.featured_image || '',
-        tags: editorForm.tags || []
-      });
-    }, [editorForm]);
+  const updateEditorForm = useCallback((updates) => {
+    setEditorForm(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  // Función para subir imagen (memoizada)
+  const handleImageUpload = useCallback(async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      showNotification('Por favor selecciona un archivo de imagen válido', 'error');
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      console.log('Subiendo imagen...');
+      const response = await uploadAPI.uploadImage(formData);
+      console.log('Imagen subida exitosamente:', response.image_url);
+
+      // Actualizar la imagen en el estado del padre
+      updateEditorField('featured_image', response.image_url);
+
+      showNotification('Imagen subida exitosamente');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      showNotification('Error al subir la imagen: ' + error.message, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [updateEditorField]);
+
+  // Editor de Artículos (usando inputs no controlados con refs para mejor rendimiento)
+  const ArticleEditor = () => {
 
     const titleRef = useRef(null);
     const excerptRef = useRef(null);
@@ -740,50 +764,65 @@ const AdminPanel = () => {
     const tagsRef = useRef(null);
     const imageUploadRef = useRef(null);
 
+    // Sincronizar refs con el estado cuando cambie el artículo
+    useEffect(() => {
+      if (titleRef.current) titleRef.current.value = editorForm.title || '';
+      if (excerptRef.current) excerptRef.current.value = editorForm.excerpt || '';
+      if (contentRef.current) contentRef.current.value = editorForm.content || '';
+      if (categoryRef.current) categoryRef.current.value = editorForm.category_id || '';
+      if (statusRef.current) statusRef.current.value = editorForm.status || 'draft';
+      if (tagsRef.current) tagsRef.current.value = Array.isArray(editorForm.tags) ? editorForm.tags.join(', ') : '';
+    }, [editorForm.id]); // Solo sincronizar cuando cambia el artículo
+
+    // Funciones de cambio que actualizan el estado del padre usando refs
+    const handleTitleChange = useCallback(() => {
+      if (titleRef.current) {
+        updateEditorField('title', titleRef.current.value);
+      }
+    }, [updateEditorField]);
+
+    const handleExcerptChange = useCallback(() => {
+      if (excerptRef.current) {
+        updateEditorField('excerpt', excerptRef.current.value);
+      }
+    }, [updateEditorField]);
+
+    const handleContentChange = useCallback(() => {
+      if (contentRef.current) {
+        updateEditorField('content', contentRef.current.value);
+      }
+    }, [updateEditorField]);
+
+    const handleCategoryChange = useCallback(() => {
+      if (categoryRef.current) {
+        updateEditorField('category_id', categoryRef.current.value);
+      }
+    }, [updateEditorField]);
+
+    const handleStatusChange = useCallback(() => {
+      if (statusRef.current) {
+        updateEditorField('status', statusRef.current.value);
+      }
+    }, [updateEditorField]);
+
+    const handleTagsChange = useCallback(() => {
+      if (tagsRef.current) {
+        updateEditorField('tags', tagsRef.current.value.split(',').map(tag => tag.trim()).filter(tag => tag));
+      }
+    }, [updateEditorField]);
+
     const handleImageButtonClick = useCallback(() => {
       imageUploadRef.current?.click();
     }, []);
 
-    const handleImageUpload = useCallback(async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      // Validar tipo de archivo
-      if (!file.type.startsWith('image/')) {
-        showNotification('Por favor selecciona un archivo de imagen válido', 'error');
-        return;
-      }
-
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        const response = await uploadAPI.uploadImage(formData);
-        setLocalForm(prev => ({ ...prev, featured_image: response.image_url }));
-        showNotification('Imagen subida exitosamente');
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        showNotification('Error al subir la imagen: ' + error.message, 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    }, []);
-
     const handleSavePost = async () => {
       // Validación básica
-      if (!localForm.title || localForm.title.trim() === '') {
+      if (!editorForm.title || editorForm.title.trim() === '') {
         showNotification('El título es obligatorio', 'error');
         return;
       }
 
-      if (!localForm.content || localForm.content.trim() === '') {
+      if (!editorForm.content || editorForm.content.trim() === '') {
         showNotification('El contenido es obligatorio', 'error');
         return;
       }
@@ -793,20 +832,20 @@ const AdminPanel = () => {
 
       try {
         const postData = {
-          title: localForm.title.trim(),
-          excerpt: localForm.excerpt ? localForm.excerpt.trim() : '',
-          content: localForm.content.trim(),
-          category_id: localForm.category_id || null,
-          status: localForm.status || 'draft',
-          featured_image: localForm.featured_image || '',
-          tags: Array.isArray(localForm.tags) ? localForm.tags.filter(tag => tag.trim() !== '') : []
+          title: editorForm.title.trim(),
+          excerpt: editorForm.excerpt ? editorForm.excerpt.trim() : '',
+          content: editorForm.content.trim(),
+          category_id: editorForm.category_id || null,
+          status: editorForm.status || 'draft',
+          featured_image: editorForm.featured_image || '',
+          tags: Array.isArray(editorForm.tags) ? editorForm.tags.filter(tag => tag.trim() !== '') : []
         };
 
         console.log('Datos a enviar:', postData);
 
-        if (localForm.id) {
+        if (editorForm.id) {
           // Actualizar post existente
-          postData.id = localForm.id;
+          postData.id = editorForm.id;
           console.log('Actualizando post existente con ID:', postData.id);
           await postsAPI.update(postData);
           setSaveStatus('saved');
@@ -818,9 +857,6 @@ const AdminPanel = () => {
           setSaveStatus('saved');
           showNotification('Artículo creado exitosamente');
         }
-
-        // Sincronizar con estado padre
-        setEditorForm(localForm);
 
         // Recargar posts
         await loadInitialData();
@@ -842,7 +878,7 @@ const AdminPanel = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-            {localForm.id ? 'Editar Artículo' : 'Crear Nuevo Artículo'}
+            {editorForm.id ? 'Editar Artículo' : 'Crear Nuevo Artículo'}
           </h2>
           <div className="flex items-center gap-2">
             <button
@@ -893,9 +929,10 @@ const AdminPanel = () => {
                     Título del Artículo
                   </label>
                   <input
+                    ref={titleRef}
                     type="text"
-                    value={localForm.title}
-                    onChange={(e) => setLocalForm(prev => ({ ...prev, title: e.target.value }))}
+                    defaultValue={editorForm.title || ''}
+                    onBlur={handleTitleChange}
                     placeholder="Ingresa el título de tu artículo..."
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
@@ -907,15 +944,16 @@ const AdminPanel = () => {
                     Resumen/Excerpt
                   </label>
                   <textarea
-                    value={localForm.excerpt}
-                    onChange={(e) => setLocalForm(prev => ({ ...prev, excerpt: e.target.value }))}
+                    ref={excerptRef}
+                    defaultValue={editorForm.excerpt || ''}
+                    onBlur={handleExcerptChange}
                     placeholder="Breve descripción del artículo..."
                     rows="3"
                     maxLength="160"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {localForm.excerpt?.length || 0}/160 caracteres
+                    {excerptRef.current?.value?.length || 0}/160 caracteres
                   </div>
                 </div>
 
@@ -1014,9 +1052,10 @@ const AdminPanel = () => {
                     />
                   ) : (
                     <textarea
+                      ref={contentRef}
                       id="content-editor"
-                      value={localForm.content}
-                      onChange={(e) => setLocalForm(prev => ({ ...prev, content: e.target.value }))}
+                      defaultValue={editorForm.content || ''}
+                      onBlur={handleContentChange}
                       placeholder={editorMode === 'markdown' ?
                         "# Tu artículo aquí...\n\nEscribe en **Markdown** para dar formato a tu contenido.\n\n## Subtítulo\n\nPuedes usar:\n- Listas\n- **Negrita**\n- *Cursiva*\n- `Código`\n- [Enlaces](http://ejemplo.com)" :
                         "Escribe el contenido de tu artículo aquí..."
@@ -1026,7 +1065,7 @@ const AdminPanel = () => {
                     />
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {localForm.content?.split(/\s+/).filter(word => word.length > 0).length || 0} palabras
+                    {editorForm.content?.split(/\s+/).filter(word => word.length > 0).length || 0} palabras
                   </div>
                 </div>
               </div>
@@ -1044,8 +1083,9 @@ const AdminPanel = () => {
                     Estado
                   </label>
                   <select
-                    value={localForm.status}
-                    onChange={(e) => setLocalForm(prev => ({ ...prev, status: e.target.value }))}
+                    ref={statusRef}
+                    value={editorForm.status}
+                    onChange={handleStatusChange}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   >
                     <option value="draft">Borrador</option>
@@ -1058,8 +1098,9 @@ const AdminPanel = () => {
                     Categoría
                   </label>
                   <select
-                    value={localForm.category_id}
-                    onChange={(e) => setLocalForm(prev => ({ ...prev, category_id: e.target.value }))}
+                    ref={categoryRef}
+                    value={editorForm.category_id}
+                    onChange={handleCategoryChange}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   >
                     <option value="">Seleccionar categoría</option>
@@ -1074,66 +1115,73 @@ const AdminPanel = () => {
             {/* Imagen Destacada */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Imagen Destacada</h3>
-              {localForm.featured_image ? (
+              {editorForm.featured_image ? (
                 <div className="space-y-3">
                   <img
-                    src={localForm.featured_image.startsWith('http') ? localForm.featured_image : `/uploads/${localForm.featured_image.split('/').pop()}`}
+                    src={editorForm.featured_image.startsWith('http') ? editorForm.featured_image : `http://localhost:8000${editorForm.featured_image}`}
                     alt="Imagen destacada"
-                    className="w-full h-32 object-cover rounded-lg"
+                    className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
                   />
-                  <div className="flex gap-2 relative">
-                    <button
-                      onClick={() => setLocalForm(prev => ({ ...prev, featured_image: '' }))}
-                      className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm relative z-10"
-                    >
-                      Eliminar imagen
-                    </button>
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={handleImageButtonClick}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm relative z-10"
+                      className="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors flex items-center gap-1"
+                      disabled={isLoading}
                     >
+                      <Upload className="w-4 h-4" />
                       Cambiar imagen
                     </button>
-                    <input
-                      ref={imageUploadRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        opacity: 0,
-                        width: '100%',
-                        height: '100%',
-                        cursor: 'pointer',
-                        zIndex: 5
-                      }}
-                    />
+                    <button
+                      onClick={() => setLocalForm(prev => ({ ...prev, featured_image: '' }))}
+                      className="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Eliminar imagen
+                    </button>
                   </div>
+                  <input
+                    ref={imageUploadRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 relative">
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
                     <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Seleccionar imagen</p>
-                    <div className="flex gap-2 justify-center">
-                      <input
-                        type="url"
-                        placeholder="URL de la imagen"
-                        value={localForm.featured_image}
-                        onChange={(e) => setLocalForm(prev => ({ ...prev, featured_image: e.target.value }))}
-                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                      />
-                      <span className="text-gray-400 dark:text-gray-500">o</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Arrastra una imagen aquí o selecciona un archivo</p>
+                    <div className="flex flex-col gap-3">
                       <button
                         onClick={handleImageButtonClick}
-                        className="px-3 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 relative z-10"
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-2 mx-auto"
+                        disabled={isLoading}
                       >
-                        Subir archivo
+                        <Upload className="w-4 h-4" />
+                        {isLoading ? 'Subiendo...' : 'Seleccionar archivo'}
                       </button>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2">o</span>
+                        <div className="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+                      </div>
+                      <input
+                        type="url"
+                        placeholder="Pega la URL de la imagen"
+                        value={editorForm.featured_image}
+                        onChange={(e) => setLocalForm(prev => ({ ...prev, featured_image: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
                     </div>
                   </div>
+                  <input
+                    ref={imageUploadRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                 </div>
               )}
             </div>
@@ -1144,11 +1192,8 @@ const AdminPanel = () => {
               <input
                 type="text"
                 placeholder="Agregar tags separados por comas"
-                value={Array.isArray(localForm.tags) ? localForm.tags.join(', ') : ''}
-                onChange={(e) => setLocalForm(prev => ({
-                  ...prev,
-                  tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
-                }))}
+                value={Array.isArray(editorForm.tags) ? editorForm.tags.join(', ') : ''}
+                onChange={handleTagsChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
               />
             </div>
@@ -2675,7 +2720,7 @@ const AdminPanel = () => {
         <main className="p-6 overflow-y-auto h-full bg-gray-50 dark:bg-gray-900">
           {currentView === 'dashboard' && <Dashboard />}
           {currentView === 'posts' && <PostsList />}
-          {currentView === 'editor' && <ArticleEditor key="editor" />}
+          {currentView === 'editor' && <ArticleEditor />}
 
           {/* Vista de Categorías */}
           {currentView === 'categories' && <CategoriesView />}
