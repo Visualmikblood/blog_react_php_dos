@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, useRef, useCallback, createContext, useContext, useMemo } from 'react';
 import {
   Plus, Edit3, Save, X, Eye, Image, Bold, Italic, Link, List,
   Hash, Quote, Code, Upload, Calendar, User, Tag, Folder,
@@ -891,6 +891,13 @@ const AdminPanel = () => {
         }
       }, []);
 
+      const wordCount = useMemo(() => {
+        const text = localForm.content || '';
+        if (text.trim() === '') return 0;
+        const words = text.match(/\b\w+\b/g);
+        return words ? words.length : 0;
+      }, [localForm.content]);
+
     const handleImageButtonClick = useCallback(() => {
       imageUploadRef.current?.click();
     }, []);
@@ -1145,7 +1152,7 @@ const AdminPanel = () => {
                     />
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {(localForm.content || '').split(/\s+/).filter(word => word.length > 0).length} palabras
+                    {wordCount} palabras | {(localForm.content || '').length} caracteres
                   </div>
                 </div>
               </div>
