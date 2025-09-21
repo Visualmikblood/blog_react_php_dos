@@ -2431,22 +2431,34 @@ const AdminPanel = () => {
                   <ArrowLeft className="w-4 h-4" />
                   Volver al blog
                 </button>
-                {/* Botón del tema */}
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleTheme();
-                  }}
-                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                >
-                  {isDarkMode ? (
-                    <Sun className="w-5 h-5 text-yellow-500" />
-                  ) : (
-                    <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                  )}
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* Botón del tema */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleTheme();
+                    }}
+                    className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                  >
+                    {isDarkMode ? (
+                      <Sun className="w-5 h-5 text-yellow-500" />
+                    ) : (
+                      <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsPublicView(false);
+                      setCurrentPostId(null);
+                      setCurrentView('login');
+                    }}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 dark:from-blue-600 dark:to-purple-700"
+                  >
+                    Panel Admin
+                  </button>
+                </div>
               </div>
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
