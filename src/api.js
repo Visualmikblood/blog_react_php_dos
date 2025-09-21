@@ -105,20 +105,13 @@ export const postsAPI = {
   },
 
   create: (postData) => {
-    const formData = new FormData();
-    formData.append('action', 'create');
-    Object.keys(postData).forEach(key => {
-      if (postData[key] !== null && postData[key] !== undefined) {
-        formData.append(key, postData[key]);
-      }
-    });
-
     return fetch(`${API_BASE_URL}/admin/posts/create.php`, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
       },
-      body: formData
+      body: JSON.stringify(postData)
     }).then(response => {
       if (!response.ok) {
         return response.json().then(errorData => {

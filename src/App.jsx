@@ -777,23 +777,36 @@ const AdminPanel = () => {
     }, []);
 
     const handleSavePost = async () => {
+      // Validación básica
+      if (!localForm.title || localForm.title.trim() === '') {
+        showNotification('El título es obligatorio', 'error');
+        return;
+      }
+
+      if (!localForm.content || localForm.content.trim() === '') {
+        showNotification('El contenido es obligatorio', 'error');
+        return;
+      }
+
       setSaveStatus('saving');
       setIsLoading(true);
 
       try {
         const postData = {
-          id: localForm.id,
-          title: localForm.title || '',
-          excerpt: localForm.excerpt || '',
-          content: localForm.content || '',
+          title: localForm.title.trim(),
+          excerpt: localForm.excerpt ? localForm.excerpt.trim() : '',
+          content: localForm.content.trim(),
           category_id: localForm.category_id || null,
           status: localForm.status || 'draft',
           featured_image: localForm.featured_image || '',
-          tags: localForm.tags || []
+          tags: Array.isArray(localForm.tags) ? localForm.tags.filter(tag => tag.trim() !== '') : []
         };
 
-        if (postData.id) {
+        console.log('Datos a enviar:', postData);
+
+        if (localForm.id) {
           // Actualizar post existente
+          postData.id = localForm.id;
           console.log('Actualizando post existente con ID:', postData.id);
           await postsAPI.update(postData);
           setSaveStatus('saved');
