@@ -519,7 +519,7 @@ const AdminPanel = () => {
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
+    const selectedText = localForm.content.substring(start, end);
 
     let before = '', after = '';
     switch (type) {
@@ -551,13 +551,10 @@ const AdminPanel = () => {
     }
 
     const newText = before + selectedText + after;
-    const newContent = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+    const newContent = localForm.content.substring(0, start) + newText + localForm.content.substring(end);
 
-    // Actualizar el textarea
-    textarea.value = newContent;
-
-    // Actualizar el estado
-    updateEditorField('content', newContent);
+    // Actualizar el estado local
+    setLocalForm(prev => ({ ...prev, content: newContent }));
 
     // Restaurar posición del cursor
     setTimeout(() => {
@@ -987,8 +984,8 @@ const AdminPanel = () => {
       const response = await uploadAPI.uploadImage(formData);
       console.log('Imagen subida exitosamente:', response.image_url);
 
-      // Actualizar la imagen en el estado local
-      setLocalForm(prev => ({ ...prev, featured_image: response.image_url }));
+      // Actualizar la imagen en el estado del padre
+      updateEditorField('featured_image', response.image_url);
 
       showNotification('Imagen subida exitosamente');
     } catch (error) {
@@ -1033,11 +1030,48 @@ const AdminPanel = () => {
       imageUploadRef.current?.click();
     }, []);
 
+    const handleImageUpload = useCallback(async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        showNotification('Por favor selecciona un archivo de imagen válido', 'error');
+        return;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        console.log('Subiendo imagen...');
+        const response = await uploadAPI.uploadImage(formData);
+        console.log('Imagen subida exitosamente:', response.image_url);
+
+        // Actualizar la imagen en el estado local
+        setLocalForm(prev => ({ ...prev, featured_image: response.image_url }));
+
+        showNotification('Imagen subida exitosamente');
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        showNotification('Error al subir la imagen: ' + error.message, 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    }, []);
+
     const handleSavePost = async () => {
-      // Obtener valores actuales de los inputs usando refs
-      const currentTitle = titleRef.current?.value || editorForm.title || '';
-      const currentExcerpt = excerptRef.current?.value || editorForm.excerpt || '';
-      const currentContent = contentRef.current?.value || editorForm.content || '';
+      // Obtener valores actuales del estado local
+      const currentTitle = localForm.title || '';
+      const currentExcerpt = localForm.excerpt || '';
+      const currentContent = localForm.content || '';
 
       // Validación básica
       if (!currentTitle || currentTitle.trim() === '') {
