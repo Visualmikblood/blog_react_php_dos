@@ -143,7 +143,7 @@ function getPublishedPosts($db) {
             'date' => date('Y-m-d H:i:s', strtotime($post['created_at'])),
             'featured_image' => $post['featured_image'],
             'comments_count' => (int)$post['comments_count'],
-            'read_time' => $post['read_time'] ?: '5 min read'
+            'read_time' => $post['read_time'] ? str_replace('read', 'lectura', $post['read_time']) : '5 min lectura'
         ];
     }, $posts);
 
@@ -213,7 +213,7 @@ function getPostById($db, $postId) {
         'date' => date('Y-m-d H:i:s', strtotime($post['created_at'])),
         'featured_image' => $post['featured_image'],
         'comments_count' => (int)$post['comments_count'],
-        'read_time' => $post['read_time'] ?: '5 min read',
+        'read_time' => $post['read_time'] ? str_replace('read', 'lectura', $post['read_time']) : '5 min lectura',
         'comments' => array_map(function($comment) {
             return [
                 'id' => $comment['id'],

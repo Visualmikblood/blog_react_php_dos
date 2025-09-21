@@ -2618,7 +2618,7 @@ const AdminPanel = () => {
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                         {post.category}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-300">
                         <Clock className="w-3 h-3" />
                         {post.read_time}
                       </span>
@@ -2637,7 +2637,7 @@ const AdminPanel = () => {
                         <User className="w-4 h-4" />
                         {post.author}
                       </span>
-                      <span className="text-xs">
+                      <span className="text-xs text-gray-400 dark:text-gray-300">
                         {new Date(post.date).toLocaleString('es-ES', {
                           year: 'numeric',
                           month: '2-digit',
