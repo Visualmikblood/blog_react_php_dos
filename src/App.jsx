@@ -577,7 +577,7 @@ const AdminPanel = () => {
   // Vista Lista de Posts
   const PostsList = () => (
     <div className="space-y-6">
-      <div className="flex justify-end items-center">
+      <div className="flex justify-start items-center">
         <button
           onClick={handleNewPost}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center gap-2"
@@ -1310,7 +1310,7 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-end items-center">
+        <div className="flex justify-start items-center">
           <button
             onClick={() => setShowCreateModal(true)}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center gap-2"
@@ -1743,7 +1743,7 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-end items-center">
+        <div className="flex justify-start items-center">
           <button
             onClick={() => setShowCreateModal(true)}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center gap-2"
@@ -2038,7 +2038,7 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-end items-center">
+        <div className="flex justify-start items-center">
           <button
             onClick={handleSaveSettings}
             disabled={isLoading}
