@@ -536,7 +536,7 @@ const AdminPanel = () => {
               <Eye className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-4">
-              <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">2,140</h3>
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{posts.reduce((total, post) => total + (post.views || 0), 0)}</h3>
               <p className="text-gray-600 dark:text-gray-400">Vistas Totales</p>
             </div>
           </div>
@@ -548,7 +548,7 @@ const AdminPanel = () => {
               <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="ml-4">
-              <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">38</h3>
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{posts.reduce((total, post) => total + (post.comments || 0), 0)}</h3>
               <p className="text-gray-600 dark:text-gray-400">Comentarios</p>
             </div>
           </div>
