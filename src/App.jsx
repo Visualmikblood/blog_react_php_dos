@@ -2452,7 +2452,7 @@ const AdminPanel = () => {
                     onClick={() => {
                       setIsPublicView(false);
                       setCurrentPostId(null);
-                      setCurrentView('login');
+                      setCurrentView('dashboard');
                     }}
                     className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 dark:from-blue-600 dark:to-purple-700"
                   >
@@ -2595,7 +2595,7 @@ const AdminPanel = () => {
                   onClick={() => {
                     setIsPublicView(false);
                     setCurrentPostId(null);
-                    setCurrentView('login');
+                    setCurrentView('dashboard');
                   }}
                   className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 dark:from-blue-600 dark:to-purple-700"
                 >
@@ -2735,7 +2735,7 @@ const AdminPanel = () => {
             </button>
 
             <button
-              onClick={() => { setCurrentPostId(null); setCurrentView('login'); }}
+              onClick={() => { setCurrentPostId(null); setCurrentView('dashboard'); }}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
               <LogIn className="w-5 h-5" />
