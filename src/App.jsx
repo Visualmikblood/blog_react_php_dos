@@ -62,6 +62,8 @@ const AdminPanel = () => {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [currentPostId, setCurrentPostId] = useState(null);
 
+  const [filteredPosts, setFilteredPosts] = useState([]);
+
   // Ya no necesitamos editorPost separado, usamos solo editorForm
 
   // Estados del editor de texto
@@ -96,7 +98,6 @@ const AdminPanel = () => {
     limit: 10
   });
 
-  const [filteredPosts, setFilteredPosts] = useState([]);
 
   // Estados para comentarios, usuarios y configuración
   const [comments, setComments] = useState([]);
@@ -118,9 +119,13 @@ const AdminPanel = () => {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    // Inicializar filteredPosts con todos los posts
-    setFilteredPosts(posts);
-  }, [posts]);
+    if (isAuthenticated && (postsFilters.page !== 1 || postsFilters.category || postsFilters.status || postsFilters.search)) {
+      loadPostsWithFilters();
+    } else {
+      setFilteredPosts(posts.slice(0, 10));
+    }
+  }, [postsFilters.page, postsFilters.category, postsFilters.status, postsFilters.search, isAuthenticated, posts]);
+
 
   // Funciones de autenticación
   const verifyToken = async (token) => {
@@ -231,6 +236,33 @@ const AdminPanel = () => {
       showNotification('Error al cargar los datos - usando datos de ejemplo', 'error');
       // Cargar datos de ejemplo si falla la API
       loadSampleData();
+    }
+  };
+
+  const loadPostsWithFilters = async () => {
+    setIsLoading(true);
+    try {
+      const response = await postsAPI.getAll(postsFilters);
+      if (response.posts) {
+        const formattedPosts = response.posts.map(post => ({
+          ...post,
+          date: new Date(post.created_at).toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }),
+          category: post.category_name || 'Sin categoría'
+        }));
+        setFilteredPosts(formattedPosts);
+      }
+    } catch (error) {
+      console.error('Error loading posts with filters:', error);
+      showNotification('Error al cargar artículos', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -365,30 +397,7 @@ const AdminPanel = () => {
   };
 
   const handleSearch = async () => {
-    setIsLoading(true);
-    try {
-      const response = await postsAPI.getAll(postsFilters);
-      if (response.posts) {
-        const formattedPosts = response.posts.map(post => ({
-          ...post,
-          date: new Date(post.created_at).toLocaleString('es-ES', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          }),
-          category: post.category_name || 'Sin categoría'
-        }));
-        setFilteredPosts(formattedPosts);
-      }
-    } catch (error) {
-      console.error('Error searching posts:', error);
-      showNotification('Error al buscar artículos', 'error');
-    } finally {
-      setIsLoading(false);
-    }
+    await loadPostsWithFilters();
   };
 
   const handleFilterChange = (filterType, value) => {
@@ -685,7 +694,7 @@ const AdminPanel = () => {
                 {(filteredPosts.length > 0 ? filteredPosts : posts).map((post, index) => (
                   <tr key={post.id} className="border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="py-4 px-4 text-center text-gray-600 dark:text-gray-400 font-medium">
-                      {index + 1}
+                      {(postsFilters.page - 1) * postsFilters.limit + index + 1}
                     </td>
                     <td className="py-4 px-4">
                       <div>
@@ -744,6 +753,29 @@ const AdminPanel = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Paginación */}
+          {filteredPosts.length > 0 && (
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <button
+                onClick={() => setPostsFilters(prev => ({ ...prev, page: prev.page - 1 }))}
+                disabled={postsFilters.page === 1}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <span className="text-gray-700 dark:text-gray-300">
+                Página {postsFilters.page}
+              </span>
+              <button
+                onClick={() => setPostsFilters(prev => ({ ...prev, page: prev.page + 1 }))}
+                disabled={filteredPosts.length < postsFilters.limit}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1242,6 +1274,29 @@ const AdminPanel = () => {
                 </div>
               </div>
             </div>
+  
+            {/* Paginación */}
+            {filteredPosts.length > 0 && (
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <button
+                  onClick={() => setPostsFilters(prev => ({ ...prev, page: prev.page - 1 }))}
+                  disabled={postsFilters.page === 1}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </button>
+                <span className="text-gray-700 dark:text-gray-300">
+                  Página {postsFilters.page}
+                </span>
+                <button
+                  onClick={() => setPostsFilters(prev => ({ ...prev, page: prev.page + 1 }))}
+                  disabled={filteredPosts.length < postsFilters.limit}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
