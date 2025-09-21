@@ -577,8 +577,7 @@ const AdminPanel = () => {
   // Vista Lista de Posts
   const PostsList = () => (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Artículos</h2>
+      <div className="flex justify-end items-center">
         <button
           onClick={handleNewPost}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center gap-2"
@@ -876,10 +875,7 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-            {editorForm.id ? 'Editar Artículo' : 'Crear Nuevo Artículo'}
-          </h2>
+        <div className="flex justify-end items-center">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentView('posts')}
@@ -1314,8 +1310,7 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Categorías</h2>
+        <div className="flex justify-end items-center">
           <button
             onClick={() => setShowCreateModal(true)}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center gap-2"
@@ -1539,9 +1534,6 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Comentarios</h2>
-        </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="p-6">
@@ -1751,8 +1743,7 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Usuarios</h2>
+        <div className="flex justify-end items-center">
           <button
             onClick={() => setShowCreateModal(true)}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center gap-2"
@@ -2047,8 +2038,7 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Configuración</h2>
+        <div className="flex justify-end items-center">
           <button
             onClick={handleSaveSettings}
             disabled={isLoading}
