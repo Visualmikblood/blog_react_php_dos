@@ -2392,13 +2392,31 @@ const AdminPanel = () => {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
             <div className="max-w-4xl mx-auto px-6 py-4">
-              <button
-                onClick={backToBlog}
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Volver al blog
-              </button>
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={backToBlog}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Volver al blog
+                </button>
+                {/* Botón del tema */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleTheme();
+                  }}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                >
+                  {isDarkMode ? (
+                    <Sun className="w-5 h-5 text-yellow-500" />
+                  ) : (
+                    <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                  )}
+                </button>
+              </div>
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
                   {currentPost.category}
@@ -2407,7 +2425,16 @@ const AdminPanel = () => {
                   <Clock className="w-4 h-4" />
                   {currentPost.read_time}
                 </span>
-                <span>{currentPost.date}</span>
+                <span>
+                  {new Date(currentPost.date).toLocaleString('es-ES', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
+                </span>
               </div>
             </div>
           </header>
@@ -2610,7 +2637,16 @@ const AdminPanel = () => {
                         <User className="w-4 h-4" />
                         {post.author}
                       </span>
-                      <span>{post.date}</span>
+                      <span className="text-xs">
+                        {new Date(post.date).toLocaleString('es-ES', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit'
+                        })}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">

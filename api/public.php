@@ -140,7 +140,7 @@ function getPublishedPosts($db) {
             'category' => $post['category_name'] ?: 'Sin categoría',
             'category_slug' => $post['category_slug'],
             'author' => $post['author_name'] ?: 'Anónimo',
-            'date' => date('Y-m-d', strtotime($post['created_at'])),
+            'date' => date('Y-m-d H:i:s', strtotime($post['created_at'])),
             'featured_image' => $post['featured_image'],
             'comments_count' => (int)$post['comments_count'],
             'read_time' => $post['read_time'] ?: '5 min read'
@@ -210,7 +210,7 @@ function getPostById($db, $postId) {
         'category_slug' => $post['category_slug'],
         'author' => $post['author_name'] ?: 'Anónimo',
         'author_bio' => $post['author_bio'],
-        'date' => date('Y-m-d', strtotime($post['created_at'])),
+        'date' => date('Y-m-d H:i:s', strtotime($post['created_at'])),
         'featured_image' => $post['featured_image'],
         'comments_count' => (int)$post['comments_count'],
         'read_time' => $post['read_time'] ?: '5 min read',
