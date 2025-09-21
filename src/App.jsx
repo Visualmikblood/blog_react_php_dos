@@ -2504,15 +2504,29 @@ const AdminPanel = () => {
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 mt-1">Descubre artículos interesantes sobre tecnología y desarrollo</p>
               </div>
-              <button
-                onClick={() => {
-                  setIsPublicView(false);
-                  setCurrentView('login');
-                }}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 dark:from-blue-600 dark:to-purple-700"
-              >
-                Panel Admin
-              </button>
+              <div className="flex items-center gap-4">
+                {/* Botón del tema */}
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                >
+                  {isDarkMode ? (
+                    <Sun className="w-5 h-5 text-yellow-500" />
+                  ) : (
+                    <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsPublicView(false);
+                    setCurrentView('login');
+                  }}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 dark:from-blue-600 dark:to-purple-700"
+                >
+                  Panel Admin
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center gap-4 mt-6">
