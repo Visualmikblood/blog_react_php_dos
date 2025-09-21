@@ -2230,7 +2230,7 @@ const AdminPanel = () => {
     const [currentPost, setCurrentPost] = useState(null);
     const [publicFilters, setPublicFilters] = useState({
       page: 1,
-      limit: 10,
+      limit: 6,
       category: '',
       search: ''
     });
@@ -2292,6 +2292,11 @@ const AdminPanel = () => {
 
     const handlePublicFilterChange = (filterType, value) => {
       setPublicFilters(prev => ({ ...prev, [filterType]: value, page: 1 }));
+    };
+
+    const changePage = (newPage) => {
+      if (newPage < 1) return;
+      setPublicFilters(prev => ({ ...prev, page: newPage }));
     };
 
     const viewPost = (postId) => {
@@ -2684,6 +2689,29 @@ const AdminPanel = () => {
                   </div>
                 </article>
               ))}
+            </div>
+          )}
+
+          {/* Paginación */}
+          {publicPosts.length > 0 && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => changePage(publicFilters.page - 1)}
+                disabled={publicFilters.page === 1}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <span className="text-gray-700 dark:text-gray-300">
+                Página {publicFilters.page}
+              </span>
+              <button
+                onClick={() => changePage(publicFilters.page + 1)}
+                disabled={publicPosts.length < publicFilters.limit}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Siguiente
+              </button>
             </div>
           )}
         </main>
