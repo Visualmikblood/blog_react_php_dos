@@ -60,6 +60,7 @@ const AdminPanel = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
+  const [currentPostId, setCurrentPostId] = useState(null);
 
   // Ya no necesitamos editorPost separado, usamos solo editorForm
 
@@ -336,7 +337,7 @@ const AdminPanel = () => {
     const editForm = {
       id: post.id,
       title: post.title || '',
-      content: post.content || `# ${post.title}\n\n${post.excerpt}\n\nEste es el contenido del artículo...`,
+      content: post.content || '',
       excerpt: post.excerpt || '',
       category_id: categories.find(c => c.name === post.category)?.id || '',
       featured_image: post.featured_image || '',
@@ -405,7 +406,8 @@ const AdminPanel = () => {
     setFilteredPosts([]);
   };
 
-  const insertMarkdown = (before, after = '') => {
+
+  const formatText = (type) => {
     const textarea = document.getElementById('content-editor');
     if (!textarea) return;
 
@@ -413,45 +415,48 @@ const AdminPanel = () => {
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);
 
-    const newText = before + selectedText + after;
-    const newContent =
-      textarea.value.substring(0, start) +
-      newText +
-      textarea.value.substring(end);
+    let before = '', after = '';
+    switch (type) {
+      case 'bold':
+        before = '**';
+        after = '**';
+        break;
+      case 'italic':
+        before = '*';
+        after = '*';
+        break;
+      case 'heading':
+        before = '## ';
+        break;
+      case 'link':
+        before = '[';
+        after = '](url)';
+        break;
+      case 'list':
+        before = '- ';
+        break;
+      case 'quote':
+        before = '> ';
+        break;
+      case 'code':
+        before = '`';
+        after = '`';
+        break;
+    }
 
-    setEditorForm(prev => ({ ...prev, content: newContent }));
+    const newText = before + selectedText + after;
+    const newContent = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+
+    textarea.value = newContent;
+
+    // Actualizar el estado
+    updateEditorField('content', newContent);
 
     // Restaurar posición del cursor
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length);
     }, 0);
-  };
-
-  const formatText = (type) => {
-    switch (type) {
-      case 'bold':
-        insertMarkdown('**', '**');
-        break;
-      case 'italic':
-        insertMarkdown('*', '*');
-        break;
-      case 'heading':
-        insertMarkdown('## ');
-        break;
-      case 'link':
-        insertMarkdown('[', '](url)');
-        break;
-      case 'list':
-        insertMarkdown('- ');
-        break;
-      case 'quote':
-        insertMarkdown('> ');
-        break;
-      case 'code':
-        insertMarkdown('`', '`');
-        break;
-    }
   };
 
   const generatePreview = () => {
@@ -577,8 +582,22 @@ const AdminPanel = () => {
                 }`}>
                   {post.status === 'published' ? 'Publicado' : 'Borrador'}
                 </span>
+                <button
+                  onClick={() => { setIsPublicView(true); setCurrentPostId(post.id); }}
+                  className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+                  title="Ver artículo"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
                 <button onClick={() => handleEditPost(post)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
                   <Edit3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDeletePost(post.id)}
+                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                  title="Eliminar artículo"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -694,6 +713,13 @@ const AdminPanel = () => {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => { setIsPublicView(true); setCurrentPostId(post.id); }}
+                          className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+                          title="Ver artículo"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => handleEditPost(post)}
                           className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                         >
@@ -767,15 +793,15 @@ const AdminPanel = () => {
 
   // Editor de Artículos (usando inputs no controlados con refs para mejor rendimiento)
   const ArticleEditor = () => {
-
-    const titleRef = useRef(null);
-    const excerptRef = useRef(null);
-    const contentRef = useRef(null);
-    const categoryRef = useRef(null);
-    const statusRef = useRef(null);
-    const featuredImageRef = useRef(null);
-    const tagsRef = useRef(null);
-    const imageUploadRef = useRef(null);
+  
+      const titleRef = useRef(null);
+      const excerptRef = useRef(null);
+      const contentRef = useRef(null);
+      const categoryRef = useRef(null);
+      const statusRef = useRef(null);
+      const featuredImageRef = useRef(null);
+      const tagsRef = useRef(null);
+      const imageUploadRef = useRef(null);
 
     // Sincronizar refs con el estado cuando cambie el artículo
     useEffect(() => {
@@ -805,6 +831,7 @@ const AdminPanel = () => {
         updateEditorField('content', contentRef.current.value);
       }
     }, [updateEditorField]);
+
 
     const handleCategoryChange = useCallback(() => {
       if (categoryRef.current) {
@@ -1075,7 +1102,7 @@ const AdminPanel = () => {
                     />
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {editorForm.content?.split(/\s+/).filter(word => word.length > 0).length || 0} palabras
+                    {contentRef.current?.value?.split(/\s+/).filter(word => word.length > 0).length || 0} palabras
                   </div>
                 </div>
               </div>
@@ -2275,14 +2302,17 @@ const AdminPanel = () => {
 
     useEffect(() => {
       if (isPublicView) {
-        if (currentPost) {
+        if (currentPost || currentPostId) {
           // Si estamos viendo un post individual, no recargamos la lista
+          if (currentPostId && !currentPost) {
+            loadPostById(currentPostId);
+          }
           return;
         }
         loadPublicPosts();
         loadPublicCategories();
       }
-    }, [isPublicView, loadPublicPosts, loadPublicCategories, currentPost]);
+    }, [isPublicView, loadPublicPosts, loadPublicCategories, currentPost, currentPostId]);
 
     const handlePublicFilterChange = (filterType, value) => {
       setPublicFilters(prev => ({ ...prev, [filterType]: value, page: 1 }));
@@ -2294,6 +2324,7 @@ const AdminPanel = () => {
 
     const backToBlog = () => {
       setCurrentPost(null);
+      setCurrentPostId(null);
       setPublicFilters(prev => ({ ...prev, page: 1 }));
     };
 
@@ -2551,6 +2582,7 @@ const AdminPanel = () => {
                 <button
                   onClick={() => {
                     setIsPublicView(false);
+                    setCurrentPostId(null);
                     setCurrentView('login');
                   }}
                   className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 dark:from-blue-600 dark:to-purple-700"
@@ -2618,7 +2650,7 @@ const AdminPanel = () => {
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                         {post.category}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-300">
+                      <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-white">
                         <Clock className="w-3 h-3" />
                         {post.read_time}
                       </span>
@@ -2637,7 +2669,7 @@ const AdminPanel = () => {
                         <User className="w-4 h-4" />
                         {post.author}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-300">
+                      <span className="text-xs text-gray-400 dark:text-white">
                         {new Date(post.date).toLocaleString('es-ES', {
                           year: 'numeric',
                           month: '2-digit',
@@ -2691,7 +2723,7 @@ const AdminPanel = () => {
             </button>
 
             <button
-              onClick={() => setCurrentView('login')}
+              onClick={() => { setCurrentPostId(null); setCurrentView('login'); }}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
               <LogIn className="w-5 h-5" />
