@@ -333,26 +333,11 @@ const AdminPanel = () => {
     setCurrentView('editor');
   }, []);
 
-  const handleEditPost = async (post) => {
-    let content = post.content || '';
-
-    // Si el post no tiene content (porque getAll no lo incluye), cargarlo desde la API
-    if (!post.content) {
-      try {
-        const response = await publicAPI.getPostById(post.id);
-        if (response.post && response.post.content) {
-          content = response.post.content;
-        }
-      } catch (error) {
-        console.error('Error loading post content for edit:', error);
-        // Mantener content vacío si falla
-      }
-    }
-
+  const handleEditPost = (post) => {
     const editForm = {
       id: post.id,
       title: post.title || '',
-      content: content,
+      content: post.content || '',
       excerpt: post.excerpt || '',
       category_id: categories.find(c => c.name === post.category)?.id || '',
       featured_image: post.featured_image || '',
@@ -428,7 +413,7 @@ const AdminPanel = () => {
 
      const start = textarea.selectionStart;
      const end = textarea.selectionEnd;
-     const selectedText = textarea.value.substring(start, end);
+     const selectedText = editorForm.content.substring(start, end);
 
     let before = '', after = '';
     switch (type) {
@@ -460,11 +445,10 @@ const AdminPanel = () => {
     }
 
     const newText = before + selectedText + after;
-    const newContent = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+    const newContent = editorForm.content.substring(0, start) + newText + editorForm.content.substring(end);
 
-    // Actualizar el valor del textarea y el estado
-    textarea.value = newContent;
-    updateEditorField('content', newContent);
+    // Actualizar el estado
+    setEditorForm({ ...editorForm, content: newContent });
 
     // Restaurar posición del cursor después del render
     setTimeout(() => {
@@ -685,6 +669,7 @@ const AdminPanel = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-600">
+                  <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">N°</th>
                   <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Título</th>
                   <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Categoría</th>
                   <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Estado</th>
@@ -694,8 +679,11 @@ const AdminPanel = () => {
                 </tr>
               </thead>
               <tbody>
-                {(filteredPosts.length > 0 ? filteredPosts : posts).map(post => (
+                {(filteredPosts.length > 0 ? filteredPosts : posts).map((post, index) => (
                   <tr key={post.id} className="border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="py-4 px-4 text-center text-gray-600 dark:text-gray-400 font-medium">
+                      {index + 1}
+                    </td>
                     <td className="py-4 px-4">
                       <div>
                         <h4 className="font-medium text-gray-800 dark:text-gray-200">{post.title}</h4>
@@ -805,14 +793,13 @@ const AdminPanel = () => {
     }
   }, [updateEditorField]);
 
-  // Editor de Artículos (usando inputs no controlados con refs para mejor rendimiento)
-  const ArticleEditor = () => {
+  // Editor de Artículos
+  const ArticleEditor = React.memo(() => {
   
-      const titleRef = useRef(null);
-      const excerptRef = useRef(null);
       const contentRef = useRef(null);
       const featuredImageRef = useRef(null);
       const imageUploadRef = useRef(null);
+      const tagsRef = useRef(null);
 
 
 
@@ -830,9 +817,9 @@ const AdminPanel = () => {
 
     const handleSavePost = async () => {
       // Obtener valores actuales de los inputs
-      const currentTitle = titleRef.current ? titleRef.current.value : editorForm.title;
-      const currentExcerpt = excerptRef.current ? excerptRef.current.value : editorForm.excerpt;
-      const currentContent = contentRef.current ? contentRef.current.value : editorForm.content;
+      const currentTitle = editorForm.title;
+      const currentExcerpt = editorForm.excerpt;
+      const currentContent = editorForm.content;
 
       // Validación básica
       if (!currentTitle || currentTitle.trim() === '') {
@@ -956,10 +943,9 @@ const AdminPanel = () => {
                     Título del Artículo
                   </label>
                   <input
-                    ref={titleRef}
                     type="text"
-                    defaultValue={editorForm.title || ''}
-                    onBlur={(e) => updateEditorField('title', e.target.value)}
+                    value={editorForm.title || ''}
+                    onChange={(e) => setEditorForm({ ...editorForm, title: e.target.value })}
                     placeholder="Ingresa el título de tu artículo..."
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
@@ -971,9 +957,8 @@ const AdminPanel = () => {
                     Resumen/Excerpt
                   </label>
                   <textarea
-                    ref={excerptRef}
-                    defaultValue={editorForm.excerpt || ''}
-                    onBlur={(e) => updateEditorField('excerpt', e.target.value)}
+                    value={editorForm.excerpt || ''}
+                    onChange={(e) => setEditorForm({ ...editorForm, excerpt: e.target.value })}
                     placeholder="Breve descripción del artículo..."
                     rows="3"
                     maxLength="160"
@@ -1081,8 +1066,8 @@ const AdminPanel = () => {
                     <textarea
                       ref={contentRef}
                       id="content-editor"
-                      defaultValue={editorForm.content || ''}
-                      onBlur={(e) => updateEditorField('content', e.target.value)}
+                      value={editorForm.content || ''}
+                      onChange={(e) => setEditorForm({ ...editorForm, content: e.target.value })}
                       placeholder={editorMode === 'markdown' ?
                         "# Tu artículo aquí...\n\nEscribe en **Markdown** para dar formato a tu contenido.\n\n## Subtítulo\n\nPuedes usar:\n- Listas\n- **Negrita**\n- *Cursiva*\n- `Código`\n- [Enlaces](http://ejemplo.com)" :
                         "Escribe el contenido de tu artículo aquí..."
@@ -1157,7 +1142,7 @@ const AdminPanel = () => {
                       Cambiar imagen
                     </button>
                     <button
-                      onClick={() => setLocalForm(prev => ({ ...prev, featured_image: '' }))}
+                      onClick={() => updateEditorField('featured_image', '')}
                       className="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors flex items-center gap-1"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1195,7 +1180,7 @@ const AdminPanel = () => {
                         type="url"
                         placeholder="Pega la URL de la imagen"
                         value={editorForm.featured_image}
-                        onChange={(e) => setLocalForm(prev => ({ ...prev, featured_image: e.target.value }))}
+                        onChange={(e) => updateEditorField('featured_image', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -1215,6 +1200,7 @@ const AdminPanel = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Tags</h3>
               <input
+                ref={tagsRef}
                 type="text"
                 placeholder="Agregar tags separados por comas"
                 value={Array.isArray(editorForm.tags) ? editorForm.tags.join(', ') : ''}
@@ -1258,7 +1244,7 @@ const AdminPanel = () => {
         </div>
       </div>
     );
-  };
+  });
 
   // Vista de Categorías
   const CategoriesView = () => {
@@ -2142,8 +2128,8 @@ const AdminPanel = () => {
               </label>
               <input
                 type="email"
-                value={loginData.email}
-                onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                defaultValue={loginData.email}
+                onBlur={(e) => setLoginData({ ...loginData, email: e.target.value })}
                 placeholder="admin@blog.com"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoComplete="email"
@@ -2157,8 +2143,8 @@ const AdminPanel = () => {
               </label>
               <input
                 type="password"
-                value={loginData.password}
-                onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                defaultValue={loginData.password}
+                onBlur={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoComplete="current-password"
@@ -2723,7 +2709,7 @@ const AdminPanel = () => {
             </button>
 
             <button
-              onClick={() => { setCurrentPostId(null); setCurrentView('dashboard'); }}
+              onClick={() => { setCurrentPostId(null); setCurrentView('login'); }}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
               <LogIn className="w-5 h-5" />
