@@ -183,7 +183,14 @@ const AdminPanel = () => {
         // Formatear posts para el frontend
         const formattedPosts = postsResponse.posts.map(post => ({
           ...post,
-          date: new Date(post.created_at).toISOString().split('T')[0],
+          date: new Date(post.created_at).toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }),
           category: post.category_name || 'Sin categoría'
         }));
         setPosts(formattedPosts);
@@ -363,7 +370,14 @@ const AdminPanel = () => {
       if (response.posts) {
         const formattedPosts = response.posts.map(post => ({
           ...post,
-          date: new Date(post.created_at).toISOString().split('T')[0],
+          date: new Date(post.created_at).toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }),
           category: post.category_name || 'Sin categoría'
         }));
         setFilteredPosts(formattedPosts);
