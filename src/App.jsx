@@ -179,7 +179,7 @@ const AdminPanel = () => {
   const loadInitialData = async () => {
     try {
       // Cargar posts
-      const postsResponse = await postsAPI.getAll();
+      const postsResponse = await postsAPI.getAll({ limit: 1000 });
       if (postsResponse.posts) {
         // Formatear posts para el frontend
         const formattedPosts = postsResponse.posts.map(post => ({
@@ -333,11 +333,26 @@ const AdminPanel = () => {
     setCurrentView('editor');
   }, []);
 
-  const handleEditPost = (post) => {
+  const handleEditPost = async (post) => {
+    let content = post.content || '';
+
+    // Si el post no tiene content (porque getAll no lo incluye), cargarlo desde la API
+    if (!post.content) {
+      try {
+        const response = await publicAPI.getPostById(post.id);
+        if (response.post && response.post.content) {
+          content = response.post.content;
+        }
+      } catch (error) {
+        console.error('Error loading post content for edit:', error);
+        // Mantener content vacío si falla
+      }
+    }
+
     const editForm = {
       id: post.id,
       title: post.title || '',
-      content: post.content || '',
+      content: content,
       excerpt: post.excerpt || '',
       category_id: categories.find(c => c.name === post.category)?.id || '',
       featured_image: post.featured_image || '',
@@ -408,12 +423,12 @@ const AdminPanel = () => {
 
 
   const formatText = (type) => {
-    const textarea = document.getElementById('content-editor');
-    if (!textarea) return;
+     const textarea = contentRef.current;
+     if (!textarea) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
+     const start = textarea.selectionStart;
+     const end = textarea.selectionEnd;
+     const selectedText = textarea.value.substring(start, end);
 
     let before = '', after = '';
     switch (type) {
@@ -447,12 +462,11 @@ const AdminPanel = () => {
     const newText = before + selectedText + after;
     const newContent = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
 
+    // Actualizar el valor del textarea y el estado
     textarea.value = newContent;
-
-    // Actualizar el estado
     updateEditorField('content', newContent);
 
-    // Restaurar posición del cursor
+    // Restaurar posición del cursor después del render
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length);
@@ -797,53 +811,12 @@ const AdminPanel = () => {
       const titleRef = useRef(null);
       const excerptRef = useRef(null);
       const contentRef = useRef(null);
-      const categoryRef = useRef(null);
-      const statusRef = useRef(null);
       const featuredImageRef = useRef(null);
-      const tagsRef = useRef(null);
       const imageUploadRef = useRef(null);
 
-    // Sincronizar refs con el estado cuando cambie el artículo
-    useEffect(() => {
-      if (titleRef.current) titleRef.current.value = editorForm.title || '';
-      if (excerptRef.current) excerptRef.current.value = editorForm.excerpt || '';
-      if (contentRef.current) contentRef.current.value = editorForm.content || '';
-      if (categoryRef.current) categoryRef.current.value = editorForm.category_id || '';
-      if (statusRef.current) statusRef.current.value = editorForm.status || 'draft';
-      if (tagsRef.current) tagsRef.current.value = Array.isArray(editorForm.tags) ? editorForm.tags.join(', ') : '';
-    }, [editorForm.id]); // Solo sincronizar cuando cambia el artículo
-
-    // Funciones de cambio que actualizan el estado del padre usando refs
-    const handleTitleChange = useCallback(() => {
-      if (titleRef.current) {
-        updateEditorField('title', titleRef.current.value);
-      }
-    }, [updateEditorField]);
-
-    const handleExcerptChange = useCallback(() => {
-      if (excerptRef.current) {
-        updateEditorField('excerpt', excerptRef.current.value);
-      }
-    }, [updateEditorField]);
-
-    const handleContentChange = useCallback(() => {
-      if (contentRef.current) {
-        updateEditorField('content', contentRef.current.value);
-      }
-    }, [updateEditorField]);
 
 
-    const handleCategoryChange = useCallback(() => {
-      if (categoryRef.current) {
-        updateEditorField('category_id', categoryRef.current.value);
-      }
-    }, [updateEditorField]);
 
-    const handleStatusChange = useCallback(() => {
-      if (statusRef.current) {
-        updateEditorField('status', statusRef.current.value);
-      }
-    }, [updateEditorField]);
 
     const handleTagsChange = useCallback(() => {
       if (tagsRef.current) {
@@ -856,13 +829,18 @@ const AdminPanel = () => {
     }, []);
 
     const handleSavePost = async () => {
+      // Obtener valores actuales de los inputs
+      const currentTitle = titleRef.current ? titleRef.current.value : editorForm.title;
+      const currentExcerpt = excerptRef.current ? excerptRef.current.value : editorForm.excerpt;
+      const currentContent = contentRef.current ? contentRef.current.value : editorForm.content;
+
       // Validación básica
-      if (!editorForm.title || editorForm.title.trim() === '') {
+      if (!currentTitle || currentTitle.trim() === '') {
         showNotification('El título es obligatorio', 'error');
         return;
       }
 
-      if (!editorForm.content || editorForm.content.trim() === '') {
+      if (!currentContent || currentContent.trim() === '') {
         showNotification('El contenido es obligatorio', 'error');
         return;
       }
@@ -871,10 +849,22 @@ const AdminPanel = () => {
       setIsLoading(true);
 
       try {
+
+        // Validación básica
+        if (!currentTitle || currentTitle.trim() === '') {
+          showNotification('El título es obligatorio', 'error');
+          return;
+        }
+
+        if (!currentContent || currentContent.trim() === '') {
+          showNotification('El contenido es obligatorio', 'error');
+          return;
+        }
+
         const postData = {
-          title: editorForm.title.trim(),
-          excerpt: editorForm.excerpt ? editorForm.excerpt.trim() : '',
-          content: editorForm.content.trim(),
+          title: currentTitle.trim(),
+          excerpt: currentExcerpt ? currentExcerpt.trim() : '',
+          content: currentContent.trim(),
           category_id: editorForm.category_id || null,
           status: editorForm.status || 'draft',
           featured_image: editorForm.featured_image || '',
@@ -969,7 +959,7 @@ const AdminPanel = () => {
                     ref={titleRef}
                     type="text"
                     defaultValue={editorForm.title || ''}
-                    onBlur={handleTitleChange}
+                    onBlur={(e) => updateEditorField('title', e.target.value)}
                     placeholder="Ingresa el título de tu artículo..."
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
@@ -983,14 +973,14 @@ const AdminPanel = () => {
                   <textarea
                     ref={excerptRef}
                     defaultValue={editorForm.excerpt || ''}
-                    onBlur={handleExcerptChange}
+                    onBlur={(e) => updateEditorField('excerpt', e.target.value)}
                     placeholder="Breve descripción del artículo..."
                     rows="3"
                     maxLength="160"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {excerptRef.current?.value?.length || 0}/160 caracteres
+                    {editorForm.excerpt?.length || 0}/160 caracteres
                   </div>
                 </div>
 
@@ -1092,7 +1082,7 @@ const AdminPanel = () => {
                       ref={contentRef}
                       id="content-editor"
                       defaultValue={editorForm.content || ''}
-                      onBlur={handleContentChange}
+                      onBlur={(e) => updateEditorField('content', e.target.value)}
                       placeholder={editorMode === 'markdown' ?
                         "# Tu artículo aquí...\n\nEscribe en **Markdown** para dar formato a tu contenido.\n\n## Subtítulo\n\nPuedes usar:\n- Listas\n- **Negrita**\n- *Cursiva*\n- `Código`\n- [Enlaces](http://ejemplo.com)" :
                         "Escribe el contenido de tu artículo aquí..."
@@ -1102,7 +1092,7 @@ const AdminPanel = () => {
                     />
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {contentRef.current?.value?.split(/\s+/).filter(word => word.length > 0).length || 0} palabras
+                    {editorForm.content?.split(/\s+/).filter(word => word.length > 0).length || 0} palabras
                   </div>
                 </div>
               </div>
@@ -1120,9 +1110,8 @@ const AdminPanel = () => {
                     Estado
                   </label>
                   <select
-                    ref={statusRef}
                     value={editorForm.status}
-                    onChange={handleStatusChange}
+                    onChange={(e) => updateEditorField('status', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   >
                     <option value="draft">Borrador</option>
@@ -1135,9 +1124,8 @@ const AdminPanel = () => {
                     Categoría
                   </label>
                   <select
-                    ref={categoryRef}
                     value={editorForm.category_id}
-                    onChange={handleCategoryChange}
+                    onChange={(e) => updateEditorField('category_id', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   >
                     <option value="">Seleccionar categoría</option>
