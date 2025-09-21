@@ -2329,7 +2329,7 @@ const AdminPanel = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Nombre *
               </label>
               <input
@@ -2342,7 +2342,7 @@ const AdminPanel = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email *
               </label>
               <input
@@ -2356,7 +2356,7 @@ const AdminPanel = () => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Comentario *
             </label>
             <textarea
@@ -2440,7 +2440,7 @@ const AdminPanel = () => {
           </header>
 
           <main className="max-w-4xl mx-auto px-6 py-8">
-            <article className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <article className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
               {currentPost.featured_image && (
                 <img
                   src={currentPost.featured_image.startsWith('http') ? currentPost.featured_image : `/uploads/${currentPost.featured_image.split('/').pop()}`}
@@ -2448,13 +2448,13 @@ const AdminPanel = () => {
                   className="w-full h-64 object-cover"
                 />
               )}
-
+  
               <div className="p-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
                   {currentPost.title}
                 </h1>
-
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-8">
+  
+                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-8">
                   <span className="flex items-center gap-2">
                     <User className="w-4 h-4" />
                     {currentPost.author}
@@ -2465,24 +2465,24 @@ const AdminPanel = () => {
                   </span>
                 </div>
 
-                <div className="prose prose-lg max-w-none">
+                <div className="prose prose-lg max-w-none dark:prose-invert">
                   {currentPost.content.split('\n').map((paragraph, index) => {
                     if (paragraph.trim() === '') return null;
 
                     // Convertir Markdown básico a HTML
                     let html = paragraph
-                      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold mt-8 mb-4">$1</h3>')
-                      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-10 mb-6">$1</h2>')
-                      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-12 mb-8">$1</h1>')
-                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-2 py-1 rounded">$1</code>')
+                      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold mt-8 mb-4 text-gray-900 dark:text-white">$1</h3>')
+                      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-10 mb-6 text-gray-900 dark:text-white">$1</h2>')
+                      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-12 mb-8 text-gray-900 dark:text-white">$1</h1>')
+                      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+                      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+                      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">$1</code>')
                       .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg shadow-md my-4" />')
-                      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline">$1</a>')
-                      .replace(/^- (.*$)/gm, '<li class="ml-6 mb-1">• $1</li>')
-                      .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-6 mb-1">$1. $2</li>');
+                      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline">$1</a>')
+                      .replace(/^- (.*$)/gm, '<li class="ml-6 mb-1 text-gray-700 dark:text-gray-300">• $1</li>')
+                      .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-6 mb-1 text-gray-700 dark:text-gray-300">$1. $2</li>');
 
-                    return <p key={index} className="mb-4 leading-relaxed" dangerouslySetInnerHTML={{ __html: html }} />;
+                    return <p key={index} className="mb-4 leading-relaxed text-gray-800 dark:text-gray-200" dangerouslySetInnerHTML={{ __html: html }} />;
                   })}
                 </div>
               </div>
@@ -2490,21 +2490,21 @@ const AdminPanel = () => {
 
             {/* Comentarios */}
             {currentPost.comments && currentPost.comments.length > 0 && (
-              <div className="mt-8 bg-white rounded-xl shadow-lg p-8">
-                <h3 className="text-2xl font-bold mb-6">Comentarios ({currentPost.comments_count})</h3>
+              <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Comentarios ({currentPost.comments_count})</h3>
                 <div className="space-y-6">
                   {currentPost.comments.map(comment => (
-                    <div key={comment.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                    <div key={comment.id} className="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0">
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                           <User className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="font-medium text-gray-900">{comment.author_name}</span>
-                            <span className="text-sm text-gray-500">{comment.date}</span>
+                            <span className="font-medium text-gray-900 dark:text-white">{comment.author_name}</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{comment.date}</span>
                           </div>
-                          <p className="text-gray-700">{comment.content}</p>
+                          <p className="text-gray-700 dark:text-gray-300">{comment.content}</p>
                         </div>
                       </div>
                     </div>
