@@ -310,7 +310,7 @@ const AdminPanel = () => {
     }
   };
 
-  const handleNewPost = () => {
+  const handleNewPost = useCallback(() => {
     const newForm = {
       id: null,
       title: '',
@@ -323,7 +323,7 @@ const AdminPanel = () => {
     };
     setEditorForm(newForm);
     setCurrentView('editor');
-  };
+  }, []);
 
   const handleEditPost = (post) => {
     const editForm = {
@@ -441,10 +441,10 @@ const AdminPanel = () => {
   };
 
   const generatePreview = () => {
-    if (!editorForm.content) return '<p class="text-gray-500 italic">La vista previa aparecerá aquí...</p>';
+    if (!localForm.content) return '<p class="text-gray-500 italic">La vista previa aparecerá aquí...</p>';
 
     // Convertir Markdown básico a HTML con mejor formato
-    let html = editorForm.content
+    let html = localForm.content
       // Headers
       .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-6 mb-3 text-gray-800 border-b border-gray-200 pb-1">$1</h3>')
       .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mt-8 mb-4 text-gray-900">$1</h2>')
@@ -707,6 +707,30 @@ const AdminPanel = () => {
 
   // Editor de Artículos
   const ArticleEditor = () => {
+    // Estado local del editor para evitar conflictos con el estado padre
+    const [localForm, setLocalForm] = useState({
+      title: '',
+      excerpt: '',
+      content: '',
+      category_id: '',
+      status: 'draft',
+      featured_image: '',
+      tags: []
+    });
+
+    // Sincronizar con el estado padre cuando cambie
+    useEffect(() => {
+      setLocalForm({
+        title: editorForm.title || '',
+        excerpt: editorForm.excerpt || '',
+        content: editorForm.content || '',
+        category_id: editorForm.category_id || '',
+        status: editorForm.status || 'draft',
+        featured_image: editorForm.featured_image || '',
+        tags: editorForm.tags || []
+      });
+    }, [editorForm]);
+
     const titleRef = useRef(null);
     const excerptRef = useRef(null);
     const contentRef = useRef(null);
@@ -742,7 +766,7 @@ const AdminPanel = () => {
         formData.append('image', file);
 
         const response = await uploadAPI.uploadImage(formData);
-        setEditorForm(prev => ({ ...prev, featured_image: response.image_url }));
+        setLocalForm(prev => ({ ...prev, featured_image: response.image_url }));
         showNotification('Imagen subida exitosamente');
       } catch (error) {
         console.error('Error uploading image:', error);
@@ -755,19 +779,19 @@ const AdminPanel = () => {
     const handleSavePost = async () => {
       setSaveStatus('saving');
       setIsLoading(true);
-  
+
       try {
         const postData = {
-          id: editorForm.id,
-          title: editorForm.title || '',
-          excerpt: editorForm.excerpt || '',
-          content: editorForm.content || '',
-          category_id: editorForm.category_id || null,
-          status: editorForm.status || 'draft',
-          featured_image: editorForm.featured_image || '',
-          tags: editorForm.tags || []
+          id: localForm.id,
+          title: localForm.title || '',
+          excerpt: localForm.excerpt || '',
+          content: localForm.content || '',
+          category_id: localForm.category_id || null,
+          status: localForm.status || 'draft',
+          featured_image: localForm.featured_image || '',
+          tags: localForm.tags || []
         };
-  
+
         if (postData.id) {
           // Actualizar post existente
           console.log('Actualizando post existente con ID:', postData.id);
@@ -781,11 +805,14 @@ const AdminPanel = () => {
           setSaveStatus('saved');
           showNotification('Artículo creado exitosamente');
         }
-  
+
+        // Sincronizar con estado padre
+        setEditorForm(localForm);
+
         // Recargar posts
         await loadInitialData();
         setCurrentView('posts');
-  
+
         // Limpiar estado después de 2 segundos
         setTimeout(() => setSaveStatus(''), 2000);
       } catch (error) {
@@ -802,7 +829,7 @@ const AdminPanel = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-            {editorForm.id ? 'Editar Artículo' : 'Crear Nuevo Artículo'}
+            {localForm.id ? 'Editar Artículo' : 'Crear Nuevo Artículo'}
           </h2>
           <div className="flex items-center gap-2">
             <button
@@ -854,8 +881,8 @@ const AdminPanel = () => {
                   </label>
                   <input
                     type="text"
-                    value={editorForm.title || ''}
-                    onChange={(e) => setEditorForm(prev => ({ ...prev, title: e.target.value }))}
+                    value={localForm.title}
+                    onChange={(e) => setLocalForm(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Ingresa el título de tu artículo..."
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
@@ -867,15 +894,15 @@ const AdminPanel = () => {
                     Resumen/Excerpt
                   </label>
                   <textarea
-                    value={editorForm.excerpt || ''}
-                    onChange={(e) => setEditorForm(prev => ({ ...prev, excerpt: e.target.value }))}
+                    value={localForm.excerpt}
+                    onChange={(e) => setLocalForm(prev => ({ ...prev, excerpt: e.target.value }))}
                     placeholder="Breve descripción del artículo..."
                     rows="3"
                     maxLength="160"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {editorForm.excerpt?.length || 0}/160 caracteres
+                    {localForm.excerpt?.length || 0}/160 caracteres
                   </div>
                 </div>
 
@@ -975,8 +1002,8 @@ const AdminPanel = () => {
                   ) : (
                     <textarea
                       id="content-editor"
-                      value={editorForm.content || ''}
-                      onChange={(e) => setEditorForm(prev => ({ ...prev, content: e.target.value }))}
+                      value={localForm.content}
+                      onChange={(e) => setLocalForm(prev => ({ ...prev, content: e.target.value }))}
                       placeholder={editorMode === 'markdown' ?
                         "# Tu artículo aquí...\n\nEscribe en **Markdown** para dar formato a tu contenido.\n\n## Subtítulo\n\nPuedes usar:\n- Listas\n- **Negrita**\n- *Cursiva*\n- `Código`\n- [Enlaces](http://ejemplo.com)" :
                         "Escribe el contenido de tu artículo aquí..."
@@ -986,7 +1013,7 @@ const AdminPanel = () => {
                     />
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {editorForm.content?.split(/\s+/).filter(word => word.length > 0).length || 0} palabras
+                    {localForm.content?.split(/\s+/).filter(word => word.length > 0).length || 0} palabras
                   </div>
                 </div>
               </div>
@@ -1004,8 +1031,8 @@ const AdminPanel = () => {
                     Estado
                   </label>
                   <select
-                    value={editorForm.status || 'draft'}
-                    onChange={(e) => setEditorForm(prev => ({ ...prev, status: e.target.value }))}
+                    value={localForm.status}
+                    onChange={(e) => setLocalForm(prev => ({ ...prev, status: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   >
                     <option value="draft">Borrador</option>
@@ -1018,8 +1045,8 @@ const AdminPanel = () => {
                     Categoría
                   </label>
                   <select
-                    value={editorForm.category_id || ''}
-                    onChange={(e) => setEditorForm(prev => ({ ...prev, category_id: e.target.value }))}
+                    value={localForm.category_id}
+                    onChange={(e) => setLocalForm(prev => ({ ...prev, category_id: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   >
                     <option value="">Seleccionar categoría</option>
@@ -1034,16 +1061,16 @@ const AdminPanel = () => {
             {/* Imagen Destacada */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Imagen Destacada</h3>
-              {editorForm.featured_image ? (
+              {localForm.featured_image ? (
                 <div className="space-y-3">
                   <img
-                    src={editorForm.featured_image.startsWith('http') ? editorForm.featured_image : `/uploads/${editorForm.featured_image.split('/').pop()}`}
+                    src={localForm.featured_image.startsWith('http') ? localForm.featured_image : `/uploads/${localForm.featured_image.split('/').pop()}`}
                     alt="Imagen destacada"
                     className="w-full h-32 object-cover rounded-lg"
                   />
                   <div className="flex gap-2 relative">
                     <button
-                      onClick={() => setEditorForm(prev => ({ ...prev, featured_image: '' }))}
+                      onClick={() => setLocalForm(prev => ({ ...prev, featured_image: '' }))}
                       className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm relative z-10"
                     >
                       Eliminar imagen
@@ -1081,8 +1108,8 @@ const AdminPanel = () => {
                       <input
                         type="url"
                         placeholder="URL de la imagen"
-                        value={editorForm.featured_image || ''}
-                        onChange={(e) => setEditorForm(prev => ({ ...prev, featured_image: e.target.value }))}
+                        value={localForm.featured_image}
+                        onChange={(e) => setLocalForm(prev => ({ ...prev, featured_image: e.target.value }))}
                         className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                       />
                       <span className="text-gray-400 dark:text-gray-500">o</span>
@@ -1104,8 +1131,8 @@ const AdminPanel = () => {
               <input
                 type="text"
                 placeholder="Agregar tags separados por comas"
-                value={Array.isArray(editorForm.tags) ? editorForm.tags.join(', ') : ''}
-                onChange={(e) => setEditorForm(prev => ({
+                value={Array.isArray(localForm.tags) ? localForm.tags.join(', ') : ''}
+                onChange={(e) => setLocalForm(prev => ({
                   ...prev,
                   tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
                 }))}
@@ -2635,7 +2662,7 @@ const AdminPanel = () => {
         <main className="p-6 overflow-y-auto h-full bg-gray-50 dark:bg-gray-900">
           {currentView === 'dashboard' && <Dashboard />}
           {currentView === 'posts' && <PostsList />}
-          {currentView === 'editor' && <ArticleEditor />}
+          {currentView === 'editor' && <ArticleEditor key="editor" />}
 
           {/* Vista de Categorías */}
           {currentView === 'categories' && <CategoriesView />}
