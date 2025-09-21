@@ -76,7 +76,7 @@ try {
 
     // Consulta principal
     $query = "SELECT
-                p.id, p.title, p.excerpt, p.status, p.created_at, p.updated_at,
+                p.id, p.title, p.excerpt, p.content, p.status, p.created_at, p.updated_at,
                 p.likes, p.views, p.read_time, p.featured_image,
                 c.name as category, c.slug as category_slug,
                 u.name as author, u.email as author_email,
@@ -119,6 +119,7 @@ try {
             "id" => (int)$row['id'],
             "title" => $row['title'],
             "excerpt" => $row['excerpt'],
+            "content" => $row['content'],
             "status" => $row['status'],
             "category" => $row['category_slug'],
             "category_name" => $row['category'],

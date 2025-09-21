@@ -365,19 +365,58 @@ const AdminPanel = () => {
     setCurrentView('editor');
   }, []);
 
-  const handleEditPost = (post) => {
-    const editForm = {
-      id: post.id,
-      title: post.title || '',
-      content: post.content || '',
-      excerpt: post.excerpt || '',
-      category_id: categories.find(c => c.name === post.category)?.id || '',
-      featured_image: post.featured_image || '',
-      tags: post.tags || [],
-      status: post.status || 'draft'
-    };
-    setEditorForm(editForm);
-    setCurrentView('editor');
+  const handleEditPost = async (post) => {
+    setIsLoading(true);
+    try {
+      // Usar datos del admin como base
+      let editForm = {
+        id: post.id,
+        title: post.title || '',
+        content: post.content || '',
+        excerpt: post.excerpt || '',
+        category_id: categories.find(c => c.name === post.category)?.id || '',
+        featured_image: post.featured_image || '',
+        tags: Array.isArray(post.tags) ? post.tags : [],
+        status: post.status || 'draft'
+      };
+
+      // Intentar cargar contenido completo desde API pública si está disponible
+      try {
+        const response = await publicAPI.getPostById(post.id);
+        if (response.post && response.post.content) {
+          // Sobrescribir con contenido completo si está disponible
+          editForm.content = response.post.content;
+          editForm.title = response.post.title || editForm.title;
+          editForm.excerpt = response.post.excerpt || editForm.excerpt;
+          editForm.featured_image = response.post.featured_image || editForm.featured_image;
+          editForm.tags = Array.isArray(response.post.tags) ? response.post.tags : editForm.tags;
+        }
+      } catch (error) {
+        // Si falla la API pública, usar datos del admin (ya preparados arriba)
+        console.log('Usando datos del admin para edición');
+      }
+
+      setEditorForm(editForm);
+      setEditorForm(editForm);
+      setCurrentView('editor');
+    } catch (error) {
+      console.error('Error loading post for edit:', error);
+      // Fallback: usar datos del admin si falla la API
+      const editForm = {
+        id: post.id,
+        title: post.title || '',
+        content: post.content || '',
+        excerpt: post.excerpt || '',
+        category_id: categories.find(c => c.name === post.category)?.id || '',
+        featured_image: post.featured_image || '',
+        tags: post.tags || [],
+        status: post.status || 'draft'
+      };
+      setEditorForm(editForm);
+      setCurrentView('editor');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDeletePost = async (postId) => {
@@ -599,7 +638,7 @@ const AdminPanel = () => {
                 >
                   <Eye className="w-4 h-4" />
                 </button>
-                <button onClick={() => handleEditPost(post)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                <button onClick={() => handleEditPost(post)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300" disabled={isLoading}>
                   <Edit3 className="w-4 h-4" />
                 </button>
                 <button
@@ -736,6 +775,7 @@ const AdminPanel = () => {
                         <button
                           onClick={() => handleEditPost(post)}
                           className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                          disabled={isLoading}
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
@@ -846,9 +886,10 @@ const AdminPanel = () => {
 
       const handleTagsChange = useCallback(() => {
         if (tagsRef.current) {
-          updateEditorField('tags', tagsRef.current.value.split(',').map(tag => tag.trim()).filter(tag => tag));
+          const tags = tagsRef.current.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+          setLocalForm(prev => ({ ...prev, tags }));
         }
-      }, [updateEditorField]);
+      }, []);
 
     const handleImageButtonClick = useCallback(() => {
       imageUploadRef.current?.click();
@@ -973,7 +1014,6 @@ const AdminPanel = () => {
                     type="text"
                     value={localForm.title || ''}
                     onChange={(e) => setLocalForm(prev => ({ ...prev, title: e.target.value }))}
-                    onBlur={() => updateEditorField('title', localForm.title)}
                     placeholder="Ingresa el título de tu artículo..."
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
@@ -987,7 +1027,6 @@ const AdminPanel = () => {
                   <textarea
                     value={localForm.excerpt || ''}
                     onChange={(e) => setLocalForm(prev => ({ ...prev, excerpt: e.target.value }))}
-                    onBlur={() => updateEditorField('excerpt', localForm.excerpt)}
                     placeholder="Breve descripción del artículo..."
                     rows="3"
                     maxLength="160"
@@ -1097,7 +1136,6 @@ const AdminPanel = () => {
                       id="content-editor"
                       value={localForm.content || ''}
                       onChange={(e) => setLocalForm(prev => ({ ...prev, content: e.target.value }))}
-                      onBlur={() => updateEditorField('content', localForm.content)}
                       placeholder={editorMode === 'markdown' ?
                         "# Tu artículo aquí...\n\nEscribe en **Markdown** para dar formato a tu contenido.\n\n## Subtítulo\n\nPuedes usar:\n- Listas\n- **Negrita**\n- *Cursiva*\n- `Código`\n- [Enlaces](http://ejemplo.com)" :
                         "Escribe el contenido de tu artículo aquí..."
@@ -1127,7 +1165,6 @@ const AdminPanel = () => {
                   <select
                     value={localForm.status}
                     onChange={(e) => setLocalForm(prev => ({ ...prev, status: e.target.value }))}
-                    onBlur={() => updateEditorField('status', localForm.status)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   >
                     <option value="draft">Borrador</option>
