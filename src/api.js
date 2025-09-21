@@ -141,16 +141,11 @@ export const postsAPI = {
   },
 
   delete: (postId) => {
-    const formData = new FormData();
-    formData.append('action', 'delete');
-    formData.append('id', postId);
-
-    return fetch(`${API_BASE_URL}/admin/posts/delete.php`, {
-      method: 'POST',
+    return fetch(`${API_BASE_URL}/admin/posts/delete.php?id=${postId}`, {
+      method: 'DELETE',
       headers: {
         'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
-      },
-      body: formData
+      }
     }).then(response => {
       if (!response.ok) {
         return response.json().then(errorData => {
