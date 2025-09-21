@@ -63,6 +63,7 @@ const AdminPanel = () => {
   const [currentPostId, setCurrentPostId] = useState(null);
 
   const [filteredPosts, setFilteredPosts] = useState([]);
+  const [selectedPosts, setSelectedPosts] = useState([]);
 
   // Ya no necesitamos editorPost separado, usamos solo editorForm
 
@@ -124,6 +125,8 @@ const AdminPanel = () => {
     } else {
       setFilteredPosts(posts.slice(0, 10));
     }
+    // Limpiar selección cuando cambian los filtros
+    setSelectedPosts([]);
   }, [postsFilters.page, postsFilters.category, postsFilters.status, postsFilters.search, isAuthenticated, posts]);
 
 
@@ -454,6 +457,61 @@ const AdminPanel = () => {
     setFilteredPosts([]);
   };
 
+  // Funciones para selección múltiple
+  const handleSelectPost = (postId) => {
+    setSelectedPosts(prev =>
+      prev.includes(postId)
+        ? prev.filter(id => id !== postId)
+        : [...prev, postId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    const currentPosts = (filteredPosts.length > 0 ? filteredPosts : posts).map(post => post.id);
+    setSelectedPosts(prev =>
+      prev.length === currentPosts.length ? [] : currentPosts
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPosts.length === 0) return;
+    if (!confirm(`¿Estás seguro de que quieres eliminar ${selectedPosts.length} artículo(s)? Esta acción no se puede deshacer.`)) return;
+
+    setIsLoading(true);
+    try {
+      for (const postId of selectedPosts) {
+        await postsAPI.delete(postId);
+      }
+      showNotification(`${selectedPosts.length} artículo(s) eliminado(s) exitosamente`);
+      setSelectedPosts([]);
+      await loadInitialData();
+    } catch (error) {
+      console.error('Error bulk deleting posts:', error);
+      showNotification('Error al eliminar artículos', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBulkStatusChange = async (newStatus) => {
+    if (selectedPosts.length === 0) return;
+
+    setIsLoading(true);
+    try {
+      for (const postId of selectedPosts) {
+        await postsAPI.update({ id: postId, status: newStatus });
+      }
+      showNotification(`${selectedPosts.length} artículo(s) actualizado(s) a ${newStatus === 'published' ? 'Publicado' : 'Borrador'}`);
+      setSelectedPosts([]);
+      await loadInitialData();
+    } catch (error) {
+      console.error('Error bulk updating posts:', error);
+      showNotification('Error al actualizar artículos', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const formatText = (type) => {
     const textarea = contentRef.current;
@@ -659,7 +717,7 @@ const AdminPanel = () => {
   // Vista Lista de Posts
   const PostsList = () => (
     <div className="space-y-6">
-      <div className="flex justify-start items-center">
+      <div className="flex justify-between items-center">
         <button
           onClick={handleNewPost}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center gap-2"
@@ -667,6 +725,45 @@ const AdminPanel = () => {
           <Plus className="w-4 h-4" />
           Nuevo Artículo
         </button>
+
+        {selectedPosts.length > 0 && (
+          <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">{selectedPosts.length}</span>
+              </div>
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                artículo(s) seleccionado(s)
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleBulkStatusChange('published')}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+              >
+                <Check className="w-4 h-4" />
+                Publicar
+              </button>
+              <button
+                onClick={() => handleBulkStatusChange('draft')}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+              >
+                <Edit3 className="w-4 h-4" />
+                Borrador
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+              >
+                <Trash2 className="w-4 h-4" />
+                Eliminar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
@@ -720,50 +817,83 @@ const AdminPanel = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-600">
-                  <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">N°</th>
-                  <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Título</th>
-                  <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Categoría</th>
-                  <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Estado</th>
-                  <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Fecha</th>
-                  <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Estadísticas</th>
-                  <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Acciones</th>
+                  <th className="w-12 py-3 px-4 text-gray-800 dark:text-gray-200">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={(filteredPosts.length > 0 ? filteredPosts : posts).every(post => selectedPosts.includes(post.id))}
+                        ref={(el) => {
+                          if (el) {
+                            const currentPosts = filteredPosts.length > 0 ? filteredPosts : posts;
+                            const selectedCount = currentPosts.filter(post => selectedPosts.includes(post.id)).length;
+                            el.indeterminate = selectedCount > 0 && selectedCount < currentPosts.length;
+                          }
+                        }}
+                        onChange={handleSelectAll}
+                        className="h-5 w-5 text-blue-600 focus:ring-blue-500 focus:ring-2 border-2 border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
+                      />
+                      <span className="ml-2 text-sm font-medium hidden sm:inline">Todos</span>
+                    </div>
+                  </th>
+                  <th className="w-16 text-left py-3 px-4 text-gray-800 dark:text-gray-200">N°</th>
+                  <th className="w-80 text-left py-3 px-4 text-gray-800 dark:text-gray-200">Título</th>
+                  <th className="w-32 text-left py-3 px-4 text-gray-800 dark:text-gray-200">Estado</th>
+                  <th className="w-40 text-left py-3 px-4 text-gray-800 dark:text-gray-200">Fecha</th>
+                  <th className="w-52 text-left py-3 px-4 text-gray-800 dark:text-gray-200">Estadísticas</th>
+                  <th className="w-32 text-left py-3 px-4 text-gray-800 dark:text-gray-200">Categoría</th>
+                  <th className="w-40 text-left py-3 px-4 text-gray-800 dark:text-gray-200">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {(filteredPosts.length > 0 ? filteredPosts : posts).map((post, index) => (
-                  <tr key={post.id} className="border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="py-4 px-4 text-center text-gray-600 dark:text-gray-400 font-medium">
-                      {(postsFilters.page - 1) * postsFilters.limit + index + 1}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div>
-                        <h4 className="font-medium text-gray-800 dark:text-gray-200">{post.title}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{post.excerpt.substring(0, 60)}...</p>
+                  <tr
+                    key={post.id}
+                    className={`border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                      selectedPosts.includes(post.id) ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''
+                    }`}
+                  >
+                    <td className="w-12 py-4 px-4">
+                      <div className="flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedPosts.includes(post.id)}
+                          onChange={() => handleSelectPost(post.id)}
+                          className="h-5 w-5 text-blue-600 focus:ring-blue-500 focus:ring-2 border-2 border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all cursor-pointer checked:bg-blue-600 checked:border-blue-600"
+                        />
                       </div>
                     </td>
-                    <td className="py-4 px-4">
-                      <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-full text-sm">
-                        {post.category}
-                      </span>
+                    <td className="w-16 py-4 px-4 text-center text-gray-600 dark:text-gray-400 font-medium">
+                      {(postsFilters.page - 1) * postsFilters.limit + index + 1}
                     </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
+                    <td className="w-80 py-4 px-4">
+                      <div>
+                        <h4 className="font-medium text-gray-800 dark:text-gray-200 truncate" title={post.title}>{post.title}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate" title={post.excerpt}>{post.excerpt}</p>
+                      </div>
+                    </td>
+                    <td className="w-32 py-4 px-4">
+                      <span className={`px-2 py-1 rounded-full text-xs truncate ${
                         post.status === 'published' ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400' : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'
                       }`}>
                         {post.status === 'published' ? 'Publicado' : 'Borrador'}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">
+                    <td className="w-40 py-4 px-4 text-sm text-gray-600 dark:text-gray-400 truncate" title={post.date}>
                       {post.date}
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">
-                      <div className="flex items-center gap-4">
-                        <span>{post.views} vistas</span>
-                        <span>{post.likes} likes</span>
-                        <span>{post.comments} comentarios</span>
+                    <td className="w-52 py-4 px-4 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate">{post.views} vistas</span>
+                        <span className="truncate">{post.likes} likes</span>
+                        <span className="truncate">{post.comments} comentarios</span>
                       </div>
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="w-32 py-4 px-4">
+                      <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-full text-sm truncate" title={post.category}>
+                        {post.category}
+                      </span>
+                    </td>
+                    <td className="w-40 py-4 px-4">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => { setIsPublicView(true); setCurrentPostId(post.id); }}
@@ -776,6 +906,7 @@ const AdminPanel = () => {
                           onClick={() => handleEditPost(post)}
                           className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                           disabled={isLoading}
+                          title="Editar artículo"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
@@ -1885,7 +2016,7 @@ const AdminPanel = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full table-fixed">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-600">
                     <th className="text-left py-3 px-4 text-gray-800 dark:text-gray-200">Usuario</th>
