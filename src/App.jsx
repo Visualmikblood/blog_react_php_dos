@@ -90,6 +90,20 @@ const AdminPanel = () => {
     tags: []
   });
 
+  const [editorLocalForm, setEditorLocalForm] = useState({
+    title: '',
+    content: '',
+    excerpt: '',
+    category_id: '',
+    status: 'draft',
+    featured_image: '',
+    tags: []
+  });
+
+  const setEditorLocalFormCallback = useCallback((updater) => {
+    setEditorLocalForm(updater);
+  }, []);
+
   // Estados de filtros y búsqueda
   const [postsFilters, setPostsFilters] = useState({
     search: '',
@@ -328,15 +342,7 @@ const AdminPanel = () => {
         showNotification('Artículo actualizado exitosamente');
       } else {
         // Crear nuevo post
-        const postData = {
-          title: editorForm.title,
-          content: editorForm.content,
-          excerpt: editorForm.excerpt,
-          category_id: editorForm.category_id,
-          status: editorForm.status,
-          featured_image: editorForm.featured_image,
-          tags: editorForm.tags
-        };
+        const postData = { ...localForm };
 
         await postsAPI.create(postData);
         showNotification('Artículo creado exitosamente');
@@ -354,8 +360,8 @@ const AdminPanel = () => {
   };
 
   const handleNewPost = useCallback(() => {
-    const newForm = {
-      id: null,
+    setEditorForm({ id: null });
+    setEditorLocalForm({
       title: '',
       content: '',
       excerpt: '',
@@ -363,8 +369,7 @@ const AdminPanel = () => {
       status: 'draft',
       featured_image: '',
       tags: []
-    };
-    setEditorForm(newForm);
+    });
     setCurrentView('editor');
   }, []);
 
@@ -399,8 +404,8 @@ const AdminPanel = () => {
         console.log('Usando datos del admin para edición');
       }
 
-      setEditorForm(editForm);
-      setEditorForm(editForm);
+      setEditorForm({ id: post.id });
+      setEditorLocalForm(editForm);
       setCurrentView('editor');
     } catch (error) {
       console.error('Error loading post for edit:', error);
@@ -415,7 +420,7 @@ const AdminPanel = () => {
         tags: post.tags || [],
         status: post.status || 'draft'
       };
-      setEditorForm(editForm);
+      setEditorLocalForm(editForm);
       setCurrentView('editor');
     } finally {
       setIsLoading(false);
@@ -551,10 +556,10 @@ const AdminPanel = () => {
     }
 
     const newText = before + selectedText + after;
-    const newContent = localForm.content.substring(0, start) + newText + localForm.content.substring(end);
+    const newContent = content.substring(0, start) + newText + content.substring(end);
 
     // Actualizar el estado local
-    setLocalForm(prev => ({ ...prev, content: newContent }));
+    setContent(newContent);
 
     // Restaurar posición del cursor
     setTimeout(() => {
@@ -564,7 +569,7 @@ const AdminPanel = () => {
   };
 
   const generatePreview = () => {
-    if (!localForm.content) return '<p class="text-gray-500 italic">La vista previa aparecerá aquí...</p>';
+    if (!content) return '<p class="text-gray-500 italic">La vista previa aparecerá aquí...</p>';
 
     // Agregar imagen destacada si existe
     let html = '';
@@ -574,7 +579,7 @@ const AdminPanel = () => {
     }
 
     // Convertir Markdown básico a HTML con mejor formato
-    html += localForm.content
+    html += content
       // Headers
       .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-6 mb-3 text-gray-800 border-b border-gray-200 pb-1">$1</h3>')
       .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mt-8 mb-4 text-gray-900">$1</h2>')
@@ -973,59 +978,9 @@ const AdminPanel = () => {
     setEditorForm(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Función para subir imagen (memoizada)
-  const handleImageUpload = useCallback(async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
-      showNotification('Por favor selecciona un archivo de imagen válido', 'error');
-      return;
-    }
-
-    // Validar tamaño (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
-      return;
-    }
-
-    // Mostrar vista previa local inmediatamente
-    const previewUrl = URL.createObjectURL(file);
-    updateEditorField('featured_image', previewUrl);
-
-    // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
-    e.target.value = '';
-
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      console.log('Subiendo imagen...');
-      const response = await uploadAPI.uploadImage(formData);
-      console.log('Imagen subida exitosamente:', response.image_url);
-
-      // Reemplazar la vista previa local con la URL del servidor
-      URL.revokeObjectURL(previewUrl); // Liberar memoria
-      setLocalForm(prev => ({ ...prev, featured_image: response.image_url }));
-      updateEditorField('featured_image', response.image_url);
-
-      showNotification('Imagen subida exitosamente');
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      showNotification('Error al subir la imagen: ' + error.message, 'error');
-
-      // Si falla la subida, quitar la vista previa
-      URL.revokeObjectURL(previewUrl);
-      updateEditorField('featured_image', '');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [updateEditorField]);
 
   // Editor de Artículos
-  const ArticleEditor = () => {
+  const ArticleEditor = React.memo(({ localForm, setLocalForm }) => {
 
       const titleRef = useRef(null);
       const excerptRef = useRef(null);
@@ -1033,13 +988,24 @@ const AdminPanel = () => {
       const imageUploadRef = useRef(null);
       const tagsRef = useRef(null);
 
-      const [localForm, setLocalForm] = useState(editorForm);
-      const featuredImageRef = useRef(localForm.featured_image);
-    
+      const [title, setTitle] = useState(localForm.title || '');
+      const [excerpt, setExcerpt] = useState(localForm.excerpt || '');
+      const [content, setContent] = useState(localForm.content || '');
+
       useEffect(() => {
-        setLocalForm(editorForm);
-      }, [editorForm.id]);
-    
+        setTitle(localForm.title || '');
+      }, [localForm.title]);
+
+      useEffect(() => {
+        setExcerpt(localForm.excerpt || '');
+      }, [localForm.excerpt]);
+
+      useEffect(() => {
+        setContent(localForm.content || '');
+      }, [localForm.content]);
+
+      const featuredImageRef = useRef(localForm.featured_image);
+
       useEffect(() => {
         featuredImageRef.current = localForm.featured_image;
       }, [localForm.featured_image]);
@@ -1052,11 +1018,11 @@ const AdminPanel = () => {
       }, []);
 
       const wordCount = useMemo(() => {
-        const text = localForm.content || '';
+        const text = content || '';
         if (text.trim() === '') return 0;
         const words = text.match(/\b\w+\b/g);
         return words ? words.length : 0;
-      }, [localForm.content]);
+      }, [content]);
 
     const handleImageButtonClick = useCallback(() => {
       imageUploadRef.current?.click();
@@ -1083,15 +1049,7 @@ const AdminPanel = () => {
       // Mostrar vista previa local inmediatamente
       const previewUrl = URL.createObjectURL(file);
       console.log('handleImageUpload - setting local preview:', previewUrl);
-      setLocalForm(prev => {
-        console.log('handleImageUpload - localForm before update:', prev.featured_image);
-        const newForm = { ...prev, featured_image: previewUrl };
-        console.log('handleImageUpload - localForm after update:', newForm.featured_image);
-        return newForm;
-      });
-
-      // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
-      e.target.value = '';
+      // No actualizar localForm con preview para evitar re-renders
 
       setIsLoading(true);
       try {
@@ -1114,9 +1072,6 @@ const AdminPanel = () => {
         featuredImageRef.current = response.image_url;
         localStorage.setItem('temp_featured_image', response.image_url);
         console.log('handleImageUpload - featuredImageRef updated to:', response.image_url);
-        // Actualizar editorForm también para mantener sincronización
-        updateEditorField('featured_image', response.image_url);
-        console.log('handleImageUpload - editorForm updated with server URL');
 
         showNotification('Imagen subida exitosamente');
       } catch (error) {
@@ -1125,7 +1080,6 @@ const AdminPanel = () => {
 
         // Si falla la subida, quitar la vista previa
         URL.revokeObjectURL(previewUrl);
-        setLocalForm(prev => ({ ...prev, featured_image: '' }));
       } finally {
         setIsLoading(false);
       }
@@ -1136,9 +1090,9 @@ const AdminPanel = () => {
       console.log('handleSavePost - localForm.featured_image at start:', localForm.featured_image);
 
       // Obtener valores actuales del estado local
-      const currentTitle = localForm.title || '';
-      const currentExcerpt = localForm.excerpt || '';
-      const currentContent = localForm.content || '';
+      const currentTitle = title || '';
+      const currentExcerpt = excerpt || '';
+      const currentContent = content || '';
 
       // Validación básica
       if (!currentTitle || currentTitle.trim() === '') {
@@ -1163,10 +1117,10 @@ const AdminPanel = () => {
           title: currentTitle.trim(),
           excerpt: currentExcerpt ? currentExcerpt.trim() : '',
           content: currentContent.trim(),
-          category_id: localForm.category_id || null,
-          status: localForm.status || 'draft',
+          category_id: editorLocalForm.category_id || null,
+          status: editorLocalForm.status || 'draft',
           featured_image: finalImage,
-          tags: Array.isArray(localForm.tags) ? localForm.tags.filter(tag => tag.trim() !== '') : []
+          tags: Array.isArray(editorLocalForm.tags) ? editorLocalForm.tags.filter(tag => tag.trim() !== '') : []
         };
 
         console.log('handleSavePost - Datos a enviar:', postData);
@@ -1263,8 +1217,9 @@ const AdminPanel = () => {
                   </label>
                   <input
                     type="text"
-                    value={localForm.title || ''}
-                    onChange={(e) => setLocalForm(prev => ({ ...prev, title: e.target.value }))}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    onBlur={() => setLocalForm(prev => ({ ...prev, title }))}
                     placeholder="Ingresa el título de tu artículo..."
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
@@ -1276,15 +1231,16 @@ const AdminPanel = () => {
                     Resumen/Excerpt
                   </label>
                   <textarea
-                    value={localForm.excerpt || ''}
-                    onChange={(e) => setLocalForm(prev => ({ ...prev, excerpt: e.target.value }))}
+                    value={excerpt}
+                    onChange={(e) => setExcerpt(e.target.value)}
+                    onBlur={() => setLocalForm(prev => ({ ...prev, excerpt }))}
                     placeholder="Breve descripción del artículo..."
                     rows="3"
                     maxLength="160"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   />
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {(localForm.excerpt || '').length}/160 caracteres
+                    {(excerpt || '').length}/160 caracteres
                   </div>
                 </div>
 
@@ -1385,8 +1341,9 @@ const AdminPanel = () => {
                     <textarea
                       ref={contentRef}
                       id="content-editor"
-                      value={localForm.content || ''}
-                      onChange={(e) => setLocalForm(prev => ({ ...prev, content: e.target.value }))}
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      onBlur={() => setLocalForm(prev => ({ ...prev, content }))}
                       placeholder={editorMode === 'markdown' ?
                         "# Tu artículo aquí...\n\nEscribe en **Markdown** para dar formato a tu contenido.\n\n## Subtítulo\n\nPuedes usar:\n- Listas\n- **Negrita**\n- *Cursiva*\n- `Código`\n- [Enlaces](http://ejemplo.com)" :
                         "Escribe el contenido de tu artículo aquí..."
@@ -1396,7 +1353,7 @@ const AdminPanel = () => {
                     />
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                    {wordCount} palabras | {(localForm.content || '').length} caracteres
+                    {wordCount} palabras | {(content || '').length} caracteres
                   </div>
                 </div>
               </div>
@@ -1430,7 +1387,6 @@ const AdminPanel = () => {
                   <select
                     value={localForm.category_id}
                     onChange={(e) => setLocalForm(prev => ({ ...prev, category_id: e.target.value }))}
-                    onBlur={() => updateEditorField('category_id', localForm.category_id)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                   >
                     <option value="">Seleccionar categoría</option>
@@ -1510,7 +1466,6 @@ const AdminPanel = () => {
                         placeholder="Pega la URL de la imagen"
                         value={localForm.featured_image}
                         onChange={(e) => setLocalForm(prev => ({ ...prev, featured_image: e.target.value }))}
-                        onBlur={() => updateEditorField('featured_image', localForm.featured_image)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -1535,7 +1490,6 @@ const AdminPanel = () => {
                 placeholder="Agregar tags separados por comas"
                 value={Array.isArray(localForm.tags) ? localForm.tags.join(', ') : ''}
                 onChange={(e) => setLocalForm(prev => ({ ...prev, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag) }))}
-                onBlur={() => updateEditorField('tags', localForm.tags)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
               />
             </div>
@@ -1598,7 +1552,7 @@ const AdminPanel = () => {
         </div>
       </div>
     );
-  };
+  });
 
   // Vista de Categorías
   const CategoriesView = () => {
@@ -3181,7 +3135,7 @@ const AdminPanel = () => {
         <main className="p-6 overflow-y-auto h-full bg-gray-50 dark:bg-gray-900">
           {currentView === 'dashboard' && <Dashboard />}
           {currentView === 'posts' && <PostsList />}
-          {currentView === 'editor' && <ArticleEditor />}
+          {currentView === 'editor' && <ArticleEditor localForm={editorLocalForm} setLocalForm={setEditorLocalFormCallback} />}
 
           {/* Vista de Categorías */}
           {currentView === 'categories' && <CategoriesView />}

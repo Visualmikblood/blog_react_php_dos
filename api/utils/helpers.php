@@ -24,10 +24,16 @@ class Helpers {
     }
 
     public static function calculateReadTime($content) {
-        $words_per_minute = 200;
+        $words_per_minute = 150; // Ajustado para español
         $word_count = str_word_count(strip_tags($content));
-        $minutes = ceil($word_count / $words_per_minute);
-        return $minutes . ' min read';
+        $minutes = $word_count / $words_per_minute;
+
+        if ($minutes < 1) {
+            $seconds = round($minutes * 60);
+            return max(30, $seconds) . ' sec read'; // Mínimo 30 segundos
+        } else {
+            return round($minutes) . ' min read';
+        }
     }
 }
 ?>
