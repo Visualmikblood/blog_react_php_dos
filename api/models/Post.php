@@ -22,6 +22,7 @@ class Post {
     }
 
     public function create() {
+        error_log("Post::create - featured_image: " . $this->featured_image);
         $query = "INSERT INTO " . $this->table . "
                   SET title = :title,
                       content = :content,
@@ -38,7 +39,14 @@ class Post {
         $this->title = htmlspecialchars(strip_tags($this->title));
         $this->content = htmlspecialchars(strip_tags($this->content));
         $this->excerpt = htmlspecialchars(strip_tags($this->excerpt));
-        $this->featured_image = htmlspecialchars(strip_tags($this->featured_image));
+        // Para featured_image, solo sanitizar si no es una URL externa
+        if ($this->featured_image && filter_var($this->featured_image, FILTER_VALIDATE_URL)) {
+            // Es una URL válida, mantenerla como está pero eliminar tags HTML
+            $this->featured_image = strip_tags($this->featured_image);
+        } else {
+            // No es URL o es ruta local, sanitizar normalmente
+            $this->featured_image = htmlspecialchars(strip_tags($this->featured_image));
+        }
         $this->status = htmlspecialchars(strip_tags($this->status));
         $this->read_time = htmlspecialchars(strip_tags($this->read_time));
 
@@ -125,7 +133,14 @@ class Post {
         $this->title = htmlspecialchars(strip_tags($this->title));
         $this->content = htmlspecialchars(strip_tags($this->content));
         $this->excerpt = htmlspecialchars(strip_tags($this->excerpt));
-        $this->featured_image = htmlspecialchars(strip_tags($this->featured_image));
+        // Para featured_image, solo sanitizar si no es una URL externa
+        if ($this->featured_image && filter_var($this->featured_image, FILTER_VALIDATE_URL)) {
+            // Es una URL válida, mantenerla como está pero eliminar tags HTML
+            $this->featured_image = strip_tags($this->featured_image);
+        } else {
+            // No es URL o es ruta local, sanitizar normalmente
+            $this->featured_image = htmlspecialchars(strip_tags($this->featured_image));
+        }
         $this->status = htmlspecialchars(strip_tags($this->status));
         $this->read_time = htmlspecialchars(strip_tags($this->read_time));
 

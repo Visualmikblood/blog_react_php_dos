@@ -44,7 +44,11 @@ if ($method !== 'POST') {
 // Crear directorio de uploads si no existe
 $uploadDir = __DIR__ . '/../uploads/';
 if (!file_exists($uploadDir)) {
-    mkdir($uploadDir, 0755, true);
+    if (!mkdir($uploadDir, 0777, true)) {
+        http_response_code(500);
+        echo json_encode(array("message" => "No se pudo crear el directorio de uploads."));
+        exit();
+    }
 }
 
 // Verificar si se recibió un archivo
@@ -82,8 +86,9 @@ $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
 $newFileName = uniqid('img_', true) . '.' . $fileExtension;
 $uploadPath = $uploadDir . $newFileName;
 
-// Mover archivo al directorio de destino
-if (move_uploaded_file($fileTmpName, $uploadPath)) {
+// Guardar archivo en el directorio de destino
+$content = file_get_contents($fileTmpName);
+if ($content !== false && file_put_contents($uploadPath, $content)) {
     // Generar URL relativa para el frontend
     $imageUrl = '/uploads/' . $newFileName;
 
@@ -95,6 +100,6 @@ if (move_uploaded_file($fileTmpName, $uploadPath)) {
     ));
 } else {
     http_response_code(500);
-    echo json_encode(array("message" => "Error al guardar la imagen."));
+    echo json_encode(array("message" => "Error al guardar la imagen en el servidor."));
 }
 ?>

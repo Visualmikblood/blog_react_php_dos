@@ -6,7 +6,7 @@ import {
   AlertCircle, FileText, BarChart3, Users, MessageSquare, LogIn, LogOut,
   Home, BookOpen, Clock, ArrowLeft, Moon, Sun
 } from 'lucide-react';
-import { authAPI, postsAPI, categoriesAPI, dashboardAPI, uploadAPI, commentsAPI, usersAPI, settingsAPI, publicAPI } from './api';
+import { authAPI, postsAPI, categoriesAPI, dashboardAPI, uploadAPI, commentsAPI, usersAPI, settingsAPI, publicAPI, API_BASE_URL } from './api';
 
 // Contexto del tema
 const ThemeContext = createContext();
@@ -564,10 +564,17 @@ const AdminPanel = () => {
   };
 
   const generatePreview = () => {
-    if (!editorForm.content) return '<p class="text-gray-500 italic">La vista previa aparecerá aquí...</p>';
+    if (!localForm.content) return '<p class="text-gray-500 italic">La vista previa aparecerá aquí...</p>';
+
+    // Agregar imagen destacada si existe
+    let html = '';
+    if (localForm.featured_image) {
+      const imgSrc = localForm.featured_image.startsWith('http') || localForm.featured_image.startsWith('blob:') ? localForm.featured_image : `${API_BASE_URL}${localForm.featured_image}`;
+      html += `<img src="${imgSrc}" alt="Imagen destacada" class="w-full h-64 object-cover rounded-lg mb-6 shadow-md" />`;
+    }
 
     // Convertir Markdown básico a HTML con mejor formato
-    let html = editorForm.content
+    html += localForm.content
       // Headers
       .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-6 mb-3 text-gray-800 border-b border-gray-200 pb-1">$1</h3>')
       .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mt-8 mb-4 text-gray-900">$1</h2>')
@@ -588,7 +595,10 @@ const AdminPanel = () => {
 
       // Enlaces e imágenes
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline" target="_blank">$1</a>')
-      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg shadow-md my-4" />')
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+        const fullSrc = src.startsWith('http') || src.startsWith('blob:') ? src : `${API_BASE_URL}${src}`;
+        return `<img src="${fullSrc}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-md my-4" />`;
+      })
 
       // Párrafos
       .replace(/\n\n/g, '</p><p class="mb-4 leading-relaxed">')
@@ -975,6 +985,13 @@ const AdminPanel = () => {
       return;
     }
 
+    // Mostrar vista previa local inmediatamente
+    const previewUrl = URL.createObjectURL(file);
+    updateEditorField('featured_image', previewUrl);
+
+    // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+    e.target.value = '';
+
     setIsLoading(true);
     try {
       const formData = new FormData();
@@ -984,13 +1001,19 @@ const AdminPanel = () => {
       const response = await uploadAPI.uploadImage(formData);
       console.log('Imagen subida exitosamente:', response.image_url);
 
-      // Actualizar la imagen en el estado del padre
+      // Reemplazar la vista previa local con la URL del servidor
+      URL.revokeObjectURL(previewUrl); // Liberar memoria
+      setLocalForm(prev => ({ ...prev, featured_image: response.image_url }));
       updateEditorField('featured_image', response.image_url);
 
       showNotification('Imagen subida exitosamente');
     } catch (error) {
       console.error('Error uploading image:', error);
       showNotification('Error al subir la imagen: ' + error.message, 'error');
+
+      // Si falla la subida, quitar la vista previa
+      URL.revokeObjectURL(previewUrl);
+      updateEditorField('featured_image', '');
     } finally {
       setIsLoading(false);
     }
@@ -1002,15 +1025,19 @@ const AdminPanel = () => {
       const titleRef = useRef(null);
       const excerptRef = useRef(null);
       const contentRef = useRef(null);
-      const featuredImageRef = useRef(null);
       const imageUploadRef = useRef(null);
       const tagsRef = useRef(null);
 
       const [localForm, setLocalForm] = useState(editorForm);
-
+      const featuredImageRef = useRef(localForm.featured_image);
+    
       useEffect(() => {
         setLocalForm(editorForm);
       }, [editorForm.id]);
+    
+      useEffect(() => {
+        featuredImageRef.current = localForm.featured_image;
+      }, [localForm.featured_image]);
 
       const handleTagsChange = useCallback(() => {
         if (tagsRef.current) {
@@ -1034,6 +1061,8 @@ const AdminPanel = () => {
       const file = e.target.files[0];
       if (!file) return;
 
+      console.log('handleImageUpload - file selected:', file.name, 'type:', file.type, 'size:', file.size);
+
       // Validar tipo de archivo
       if (!file.type.startsWith('image/')) {
         showNotification('Por favor selecciona un archivo de imagen válido', 'error');
@@ -1046,6 +1075,19 @@ const AdminPanel = () => {
         return;
       }
 
+      // Mostrar vista previa local inmediatamente
+      const previewUrl = URL.createObjectURL(file);
+      console.log('handleImageUpload - setting local preview:', previewUrl);
+      setLocalForm(prev => {
+        console.log('handleImageUpload - localForm before update:', prev.featured_image);
+        const newForm = { ...prev, featured_image: previewUrl };
+        console.log('handleImageUpload - localForm after update:', newForm.featured_image);
+        return newForm;
+      });
+
+      // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+      e.target.value = '';
+
       setIsLoading(true);
       try {
         const formData = new FormData();
@@ -1055,19 +1097,39 @@ const AdminPanel = () => {
         const response = await uploadAPI.uploadImage(formData);
         console.log('Imagen subida exitosamente:', response.image_url);
 
-        // Actualizar la imagen en el estado local
-        setLocalForm(prev => ({ ...prev, featured_image: response.image_url }));
+        // Reemplazar la vista previa local con la URL del servidor
+        URL.revokeObjectURL(previewUrl); // Liberar memoria
+        console.log('handleImageUpload - replacing with server URL:', response.image_url);
+        setLocalForm(prev => {
+          const newForm = { ...prev, featured_image: response.image_url };
+          console.log('handleImageUpload - localForm updated to:', newForm);
+          return newForm;
+        });
+        // Actualizar la ref y localStorage inmediatamente
+        featuredImageRef.current = response.image_url;
+        localStorage.setItem('temp_featured_image', response.image_url);
+        console.log('handleImageUpload - featuredImageRef updated to:', response.image_url);
+        // Actualizar editorForm también para mantener sincronización
+        updateEditorField('featured_image', response.image_url);
+        console.log('handleImageUpload - editorForm updated with server URL');
 
         showNotification('Imagen subida exitosamente');
       } catch (error) {
         console.error('Error uploading image:', error);
         showNotification('Error al subir la imagen: ' + error.message, 'error');
+
+        // Si falla la subida, quitar la vista previa
+        URL.revokeObjectURL(previewUrl);
+        setLocalForm(prev => ({ ...prev, featured_image: '' }));
       } finally {
         setIsLoading(false);
       }
     }, []);
 
     const handleSavePost = async () => {
+      console.log('handleSavePost - localForm at start:', localForm);
+      console.log('handleSavePost - localForm.featured_image at start:', localForm.featured_image);
+
       // Obtener valores actuales del estado local
       const currentTitle = localForm.title || '';
       const currentExcerpt = localForm.excerpt || '';
@@ -1088,17 +1150,29 @@ const AdminPanel = () => {
       setIsLoading(true);
 
       try {
+        // Obtener imagen de localStorage o ref
+        const tempImage = localStorage.getItem('temp_featured_image');
+        const finalImage = tempImage || featuredImageRef.current || '';
+
         const postData = {
           title: currentTitle.trim(),
           excerpt: currentExcerpt ? currentExcerpt.trim() : '',
           content: currentContent.trim(),
           category_id: localForm.category_id || null,
           status: localForm.status || 'draft',
-          featured_image: localForm.featured_image || '',
+          featured_image: finalImage,
           tags: Array.isArray(localForm.tags) ? localForm.tags.filter(tag => tag.trim() !== '') : []
         };
 
-        console.log('Datos a enviar:', postData);
+        console.log('handleSavePost - Datos a enviar:', postData);
+        console.log('handleSavePost - tempImage:', tempImage);
+        console.log('handleSavePost - featuredImageRef.current:', featuredImageRef.current);
+        console.log('handleSavePost - finalImage:', finalImage);
+
+        // Limpiar localStorage después de usarlo
+        if (tempImage) {
+          localStorage.removeItem('temp_featured_image');
+        }
 
         if (editorForm.id) {
           // Actualizar post existente
@@ -1368,10 +1442,14 @@ const AdminPanel = () => {
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Imagen Destacada</h3>
               {localForm.featured_image ? (
                 <div className="space-y-3">
+                  {console.log('About to render image, featured_image:', localForm.featured_image)}
                   <img
-                    src={localForm.featured_image.startsWith('http') ? localForm.featured_image : `http://localhost:8000${localForm.featured_image}`}
+                    src={localForm.featured_image.startsWith('http') || localForm.featured_image.startsWith('blob:') ? localForm.featured_image : `${API_BASE_URL}${localForm.featured_image}`}
                     alt="Imagen destacada"
                     className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                    onLoad={() => console.log('Imagen cargada correctamente')}
+                    onError={(e) => console.log('Error cargando imagen:', e.target.src)}
+                    ref={(img) => { if (img) console.log('Rendering image with src:', img.src); }}
                   />
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -1383,7 +1461,12 @@ const AdminPanel = () => {
                       Cambiar imagen
                     </button>
                     <button
-                      onClick={() => setLocalForm(prev => ({ ...prev, featured_image: '' }))}
+                      onClick={() => {
+                        if (localForm.featured_image.startsWith('blob:')) {
+                          URL.revokeObjectURL(localForm.featured_image);
+                        }
+                        setLocalForm(prev => ({ ...prev, featured_image: '' }));
+                      }}
                       className="px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition-colors flex items-center gap-1"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -2731,9 +2814,11 @@ const AdminPanel = () => {
             <article className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
               {currentPost.featured_image && (
                 <img
-                  src={currentPost.featured_image.startsWith('http') ? currentPost.featured_image : `/uploads/${currentPost.featured_image.split('/').pop()}`}
+                  src={currentPost.featured_image.startsWith('http') ? currentPost.featured_image : `${API_BASE_URL}${currentPost.featured_image}`}
                   alt={currentPost.title}
                   className="w-full h-64 object-cover"
+                  onLoad={() => console.log('Imagen cargada en post individual:', currentPost.featured_image)}
+                  onError={(e) => console.log('Error cargando imagen en post individual:', currentPost.featured_image, e)}
                 />
               )}
   
@@ -2765,7 +2850,10 @@ const AdminPanel = () => {
                       .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
                       .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
                       .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">$1</code>')
-                      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg shadow-md my-4" />')
+                      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+                        const fullSrc = src.startsWith('http') || src.startsWith('blob:') ? src : `${API_BASE_URL}${src}`;
+                        return `<img src="${fullSrc}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-md my-4" />`;
+                      })
                       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline">$1</a>')
                       .replace(/^- (.*$)/gm, '<li class="ml-6 mb-1 text-gray-700 dark:text-gray-300">• $1</li>')
                       .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-6 mb-1 text-gray-700 dark:text-gray-300">$1. $2</li>');
@@ -2896,9 +2984,11 @@ const AdminPanel = () => {
                 >
                   {post.featured_image && (
                     <img
-                      src={post.featured_image.startsWith('http') ? post.featured_image : `/uploads/${post.featured_image.split('/').pop()}`}
+                      src={post.featured_image.startsWith('http') ? post.featured_image : `${API_BASE_URL}${post.featured_image}`}
                       alt={post.title}
                       className="w-full h-48 object-cover"
+                      onLoad={() => console.log('Imagen cargada en lista:', post.featured_image)}
+                      onError={(e) => console.log('Error cargando imagen en lista:', post.featured_image, e)}
                     />
                   )}
 

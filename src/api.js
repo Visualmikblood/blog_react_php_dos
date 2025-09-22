@@ -1,5 +1,5 @@
 // Configuración de la API
-const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = 'http://localhost:8000';
 const USE_PROXY = false; // Cambiar a false para usar URLs directas
 
 // Función helper para hacer peticiones HTTP
@@ -272,16 +272,26 @@ export const dashboardAPI = {
 export const uploadAPI = {
   uploadImage: (formData) => {
     const token = localStorage.getItem('auth_token');
+    console.log('uploadAPI.uploadImage - token exists:', !!token);
+    console.log('uploadAPI.uploadImage - token value:', token ? token.substring(0, 20) + '...' : 'null');
+
     return fetch(`${API_BASE_URL}/admin/upload.php`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': token ? `Bearer ${token}` : undefined
       },
       body: formData
     }).then(response => {
+      console.log('uploadAPI.uploadImage - response status:', response.status);
       if (!response.ok) {
-        return response.json().then(errorData => {
-          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        return response.text().then(text => {
+          console.log('uploadAPI.uploadImage - error response:', text);
+          try {
+            const errorData = JSON.parse(text);
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+          } catch (e) {
+            throw new Error(`HTTP error! status: ${response.status} - ${text}`);
+          }
         });
       }
       return response.json();
