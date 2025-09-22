@@ -904,8 +904,13 @@ const AdminPanel = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => { setIsPublicView(true); setCurrentPostId(post.id); }}
-                          className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
-                          title="Ver artículo"
+                          className={`${
+                            post.status === 'published'
+                              ? 'text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300'
+                              : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                          }`}
+                          title={post.status === 'published' ? 'Ver artículo' : 'Solo artículos publicados pueden verse'}
+                          disabled={post.status !== 'published'}
                         >
                           <Eye className="w-4 h-4" />
                         </button>
