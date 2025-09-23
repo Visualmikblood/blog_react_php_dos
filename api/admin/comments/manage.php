@@ -43,6 +43,9 @@ try {
         case 'GET':
             handleGetComments($db);
             break;
+        case 'POST':
+            handlePostActions($db);
+            break;
         case 'PUT':
             handleUpdateComment($db);
             break;
@@ -126,6 +129,39 @@ function handleGetComments($db) {
     ]);
 }
 
+function handlePostActions($db) {
+    // Procesar datos tanto de JSON como de FormData
+    $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+
+    if (strpos($contentType, 'application/json') !== false) {
+        $data = json_decode(file_get_contents("php://input"));
+        $action = $data->action ?? null;
+        $id = $data->id ?? null;
+    } elseif (strpos($contentType, 'multipart/form-data') !== false) {
+        $action = $_POST['action'] ?? null;
+        $id = $_POST['id'] ?? null;
+    } else {
+        http_response_code(400);
+        echo json_encode(array("message" => "Tipo de contenido no soportado."));
+        return;
+    }
+
+    if (!$action) {
+        http_response_code(400);
+        echo json_encode(array("message" => "Acción requerida."));
+        return;
+    }
+
+    switch ($action) {
+        case 'delete':
+            handleDeleteCommentPost($db, $id);
+            break;
+        default:
+            http_response_code(400);
+            echo json_encode(array("message" => "Acción no válida."));
+    }
+}
+
 function handleUpdateComment($db) {
     $data = json_decode(file_get_contents("php://input"));
 
@@ -146,6 +182,26 @@ function handleUpdateComment($db) {
     } else {
         http_response_code(503);
         echo json_encode(array("message" => "No se pudo actualizar el comentario."));
+    }
+}
+
+function handleDeleteCommentPost($db, $comment_id) {
+    if (!$comment_id) {
+        http_response_code(400);
+        echo json_encode(array("message" => "ID de comentario requerido."));
+        return;
+    }
+
+    $query = "DELETE FROM comments WHERE id = :id";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':id', $comment_id);
+
+    if ($stmt->execute()) {
+        http_response_code(200);
+        echo json_encode(array("message" => "Comentario eliminado exitosamente."));
+    } else {
+        http_response_code(503);
+        echo json_encode(array("message" => "No se pudo eliminar el comentario."));
     }
 }
 
