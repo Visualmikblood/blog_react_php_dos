@@ -356,6 +356,48 @@ export const commentsAPI = {
       }
       return response.json();
     });
+  },
+
+  bulkDelete: (commentIds) => {
+    const formData = new FormData();
+    formData.append('action', 'bulk_delete');
+    formData.append('ids', JSON.stringify(commentIds));
+
+    return fetch(`${API_BASE_URL}/admin/comments/manage.php`, {
+      method: 'POST',
+      headers: {
+        'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
+      },
+      body: formData
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
+  },
+
+  bulkUpdate: (updates) => {
+    const formData = new FormData();
+    formData.append('action', 'bulk_update');
+    formData.append('updates', JSON.stringify(updates));
+
+    return fetch(`${API_BASE_URL}/admin/comments/manage.php`, {
+      method: 'POST',
+      headers: {
+        'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
+      },
+      body: formData
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
   }
 };
 

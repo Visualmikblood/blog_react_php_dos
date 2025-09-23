@@ -156,6 +156,12 @@ function handlePostActions($db) {
         case 'delete':
             handleDeleteCommentPost($db, $id);
             break;
+        case 'bulk_delete':
+            handleBulkDeleteComments($db, $data->ids ?? []);
+            break;
+        case 'bulk_update':
+            handleBulkUpdateComments($db, $data->updates ?? []);
+            break;
         default:
             http_response_code(400);
             echo json_encode(array("message" => "Acción no válida."));
@@ -202,6 +208,64 @@ function handleDeleteCommentPost($db, $comment_id) {
     } else {
         http_response_code(503);
         echo json_encode(array("message" => "No se pudo eliminar el comentario."));
+    }
+}
+
+function handleBulkDeleteComments($db, $commentIds) {
+    if (!is_array($commentIds) || empty($commentIds)) {
+        http_response_code(400);
+        echo json_encode(array("message" => "IDs de comentarios requeridos."));
+        return;
+    }
+
+    $placeholders = str_repeat('?,', count($commentIds) - 1) . '?';
+    $query = "DELETE FROM comments WHERE id IN ($placeholders)";
+    $stmt = $db->prepare($query);
+
+    if ($stmt->execute($commentIds)) {
+        http_response_code(200);
+        echo json_encode(array(
+            "message" => count($commentIds) . " comentario(s) eliminado(s) exitosamente.",
+            "deleted_count" => count($commentIds)
+        ));
+    } else {
+        http_response_code(503);
+        echo json_encode(array("message" => "No se pudieron eliminar los comentarios."));
+    }
+}
+
+function handleBulkUpdateComments($db, $updates) {
+    if (!is_array($updates) || empty($updates)) {
+        http_response_code(400);
+        echo json_encode(array("message" => "Actualizaciones requeridas."));
+        return;
+    }
+
+    $updatedCount = 0;
+    foreach ($updates as $update) {
+        if (!isset($update->id) || !isset($update->status)) {
+            continue;
+        }
+
+        $query = "UPDATE comments SET status = :status, updated_at = NOW() WHERE id = :id";
+        $stmt = $db->prepare($query);
+        $stmt->bindParam(':status', $update->status);
+        $stmt->bindParam(':id', $update->id);
+
+        if ($stmt->execute()) {
+            $updatedCount++;
+        }
+    }
+
+    if ($updatedCount > 0) {
+        http_response_code(200);
+        echo json_encode(array(
+            "message" => "$updatedCount comentario(s) actualizado(s) exitosamente.",
+            "updated_count" => $updatedCount
+        ));
+    } else {
+        http_response_code(503);
+        echo json_encode(array("message" => "No se pudieron actualizar los comentarios."));
     }
 }
 

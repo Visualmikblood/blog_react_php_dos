@@ -66,6 +66,9 @@ const AdminPanel = () => {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [selectedPosts, setSelectedPosts] = useState([]);
 
+  // Estados para comentarios
+  const [selectedComments, setSelectedComments] = useState([]);
+
   // Ya no necesitamos editorPost separado, usamos solo editorForm
 
   // Estados del editor de texto
@@ -515,6 +518,58 @@ const AdminPanel = () => {
     } catch (error) {
       console.error('Error bulk updating posts:', error);
       showNotification('Error al actualizar artículos', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Funciones para selección múltiple de comentarios
+  const handleSelectComment = (commentId) => {
+    setSelectedComments(prev =>
+      prev.includes(commentId)
+        ? prev.filter(id => id !== commentId)
+        : [...prev, commentId]
+    );
+  };
+
+  const handleSelectAllComments = () => {
+    const currentComments = comments.map(comment => comment.id);
+    setSelectedComments(prev =>
+      prev.length === currentComments.length ? [] : currentComments
+    );
+  };
+
+  const handleBulkDeleteComments = async (reloadComments) => {
+    if (selectedComments.length === 0) return;
+    if (!confirm(`¿Estás seguro de que quieres eliminar ${selectedComments.length} comentario(s)? Esta acción no se puede deshacer.`)) return;
+
+    setIsLoading(true);
+    try {
+      await commentsAPI.bulkDelete(selectedComments);
+      showNotification(`${selectedComments.length} comentario(s) eliminado(s) exitosamente`);
+      setSelectedComments([]);
+      if (reloadComments) reloadComments();
+    } catch (error) {
+      console.error('Error bulk deleting comments:', error);
+      showNotification('Error al eliminar comentarios', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBulkStatusChangeComments = async (newStatus, reloadComments) => {
+    if (selectedComments.length === 0) return;
+
+    setIsLoading(true);
+    try {
+      const updates = selectedComments.map(id => ({ id, status: newStatus }));
+      await commentsAPI.bulkUpdate(updates);
+      showNotification(`${selectedComments.length} comentario(s) actualizado(s) a ${newStatus === 'approved' ? 'Aprobado' : newStatus === 'pending' ? 'Pendiente' : 'Rechazado'}`);
+      setSelectedComments([]);
+      if (reloadComments) reloadComments();
+    } catch (error) {
+      console.error('Error bulk updating comments:', error);
+      showNotification('Error al actualizar comentarios', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -1794,6 +1849,7 @@ const AdminPanel = () => {
     const [hasLoaded, setHasLoaded] = useState(false);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
 
+
     const loadComments = useCallback(async () => {
       if (hasLoaded || isLoadingComments) return; // Evitar carga duplicada
 
@@ -1802,13 +1858,12 @@ const AdminPanel = () => {
         const response = await commentsAPI.getAll(commentsFilters);
         if (response.comments) {
           setCommentsData(response.comments);
-          setHasLoaded(true);
         }
       } catch (error) {
         console.error('Error loading comments:', error);
         showNotification('Error al cargar comentarios', 'error');
         // Cargar datos de ejemplo si falla la API
-        setCommentsData([
+        const sampleComments = [
           {
             id: 1,
             author_name: 'Juan Pérez',
@@ -1827,10 +1882,11 @@ const AdminPanel = () => {
             post_title: 'Guía completa de React Hooks',
             created_at: '2024-01-10T14:20:00Z'
           }
-        ]);
-        setHasLoaded(true);
+        ];
+        setCommentsData(sampleComments);
       } finally {
         setIsLoadingComments(false);
+        setHasLoaded(true); // Siempre marcar como cargado para evitar bucles
       }
     }, [commentsFilters, hasLoaded, isLoadingComments]);
 
@@ -1838,7 +1894,7 @@ const AdminPanel = () => {
       if (!hasLoaded && !isLoadingComments) {
         loadComments();
       }
-    }, [loadComments, hasLoaded, isLoadingComments]);
+    }, [commentsFilters, hasLoaded, isLoadingComments]);
 
     const handleUpdateCommentStatus = async (commentId, newStatus) => {
       setIsLoading(true);
@@ -1881,13 +1937,76 @@ const AdminPanel = () => {
 
     return (
       <div className="space-y-6">
+        {selectedComments.length > 0 && (
+          <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">{selectedComments.length}</span>
+              </div>
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                comentario(s) seleccionado(s)
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleBulkStatusChangeComments('approved', loadComments)}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+              >
+                <Check className="w-4 h-4" />
+                Aprobar
+              </button>
+              <button
+                onClick={() => handleBulkStatusChangeComments('pending', loadComments)}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+              >
+                <Clock className="w-4 h-4" />
+                Pendiente
+              </button>
+              <button
+                onClick={() => handleBulkStatusChangeComments('rejected', loadComments)}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+              >
+                <X className="w-4 h-4" />
+                Rechazar
+              </button>
+              <button
+                onClick={() => handleBulkDeleteComments(loadComments)}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+              >
+                <Trash2 className="w-4 h-4" />
+                Eliminar
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="p-6">
             <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={commentsData.length > 0 && selectedComments.length === commentsData.length}
+                  ref={(el) => {
+                    if (el) {
+                      el.indeterminate = selectedComments.length > 0 && selectedComments.length < commentsData.length;
+                    }
+                  }}
+                  onChange={handleSelectAllComments}
+                  className="h-5 w-5 text-blue-600 focus:ring-blue-500 focus:ring-2 border-2 border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Seleccionar todos</span>
+              </div>
               <select
                 value={commentsFilters.status}
-                onChange={(e) => setCommentsFilters(prev => ({ ...prev, status: e.target.value }))}
+                onChange={(e) => {
+                  setCommentsFilters(prev => ({ ...prev, status: e.target.value }));
+                  setSelectedComments([]); // Limpiar selección al cambiar filtros
+                }}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
               >
                 <option value="all">Todos los estados</option>
@@ -1905,18 +2024,28 @@ const AdminPanel = () => {
                 </div>
               ) : (
                 commentsData.map(comment => (
-                  <div key={comment.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md dark:hover:shadow-lg transition-shadow bg-white dark:bg-gray-700">
+                  <div key={comment.id} className={`border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md dark:hover:shadow-lg transition-shadow bg-white dark:bg-gray-700 ${
+                    selectedComments.includes(comment.id) ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''
+                  }`}>
                     <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium text-gray-800 dark:text-gray-200">{comment.author_name}</span>
-                          <span className="text-sm text-gray-500 dark:text-gray-400">en</span>
-                          <span className="font-medium text-blue-600 dark:text-blue-400">{comment.post_title}</span>
-                        </div>
-                        <p className="text-gray-700 dark:text-gray-300 mb-2">{comment.content}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                          <span>{new Date(comment.created_at).toLocaleDateString()}</span>
-                          <span>{comment.author_email}</span>
+                      <div className="flex items-start gap-3 flex-1">
+                        <input
+                          type="checkbox"
+                          checked={selectedComments.includes(comment.id)}
+                          onChange={() => handleSelectComment(comment.id)}
+                          className="h-5 w-5 text-blue-600 focus:ring-blue-500 focus:ring-2 border-2 border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all cursor-pointer mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-medium text-gray-800 dark:text-gray-200">{comment.author_name}</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">en</span>
+                            <span className="font-medium text-blue-600 dark:text-blue-400">{comment.post_title}</span>
+                          </div>
+                          <p className="text-gray-700 dark:text-gray-300 mb-2">{comment.content}</p>
+                          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                            <span>{new Date(comment.created_at).toLocaleDateString()}</span>
+                            <span>{comment.author_email}</span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
