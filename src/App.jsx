@@ -532,12 +532,6 @@ const AdminPanel = () => {
     );
   };
 
-  const handleSelectAllComments = () => {
-    const currentComments = comments.map(comment => comment.id);
-    setSelectedComments(prev =>
-      prev.length === currentComments.length ? [] : currentComments
-    );
-  };
 
   const handleBulkDeleteComments = async (reloadComments) => {
     if (selectedComments.length === 0) return;
@@ -1848,6 +1842,13 @@ const AdminPanel = () => {
     const [commentsData, setCommentsData] = useState([]);
     const [hasLoaded, setHasLoaded] = useState(false);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
+
+    const handleSelectAllComments = () => {
+      const currentComments = commentsData.map(comment => comment.id);
+      setSelectedComments(prev =>
+        prev.length === currentComments.length ? [] : currentComments
+      );
+    };
 
 
     const loadComments = useCallback(async () => {
