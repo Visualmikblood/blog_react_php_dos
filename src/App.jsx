@@ -109,6 +109,8 @@ const AdminPanel = () => {
     search: '',
     category: '',
     status: '',
+    date_from: '',
+    date_to: '',
     page: 1,
     limit: 10
   });
@@ -134,14 +136,14 @@ const AdminPanel = () => {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated && (postsFilters.page !== 1 || postsFilters.category || postsFilters.status || postsFilters.search)) {
+    if (isAuthenticated && (postsFilters.page !== 1 || postsFilters.category || postsFilters.status || postsFilters.search || postsFilters.date_from || postsFilters.date_to)) {
       loadPostsWithFilters();
     } else {
       setFilteredPosts(posts.slice(0, 10));
     }
     // Limpiar selección cuando cambian los filtros
     setSelectedPosts([]);
-  }, [postsFilters.page, postsFilters.category, postsFilters.status, postsFilters.search, isAuthenticated, posts]);
+  }, [postsFilters.page, postsFilters.category, postsFilters.status, postsFilters.search, postsFilters.date_from, postsFilters.date_to, isAuthenticated, posts]);
 
 
   // Funciones de autenticación
@@ -168,21 +170,26 @@ const AdminPanel = () => {
     setIsLoading(true);
 
     try {
-      console.log('Intentando login con:', loginData);
+      console.log('DEBUG: Intentando login con:', loginData);
       const response = await authAPI.login(loginData);
-      console.log('Respuesta del login:', response);
+      console.log('DEBUG: Respuesta completa del login:', response);
+      console.log('DEBUG: response.token existe?', !!response.token);
+      console.log('DEBUG: response.token valor:', response.token);
 
       if (response.token) {
+        console.log('DEBUG: Token encontrado, guardando y redirigiendo');
         localStorage.setItem('auth_token', response.token);
         setIsAuthenticated(true);
         setUser(response.user);
         setCurrentView('dashboard');
         showNotification('Inicio de sesión exitoso');
       } else {
+        console.log('DEBUG: No hay token en respuesta, mostrando error');
         showNotification(response.message || 'Error en el inicio de sesión', 'error');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('DEBUG: Login error:', error);
+      console.error('DEBUG: Error details:', error.message);
       showNotification('Error al iniciar sesión: ' + error.message, 'error');
     } finally {
       setIsLoading(false);
@@ -456,6 +463,8 @@ const AdminPanel = () => {
       search: '',
       category: '',
       status: '',
+      date_from: '',
+      date_to: '',
       page: 1,
       limit: 10
     });
@@ -780,8 +789,8 @@ const AdminPanel = () => {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
         <div className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1">
+          <div className="flex items-center gap-4 mb-6 flex-wrap">
+            <div className="relative flex-1 min-w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
               <input
                 type="text"
@@ -810,6 +819,24 @@ const AdminPanel = () => {
               <option value="published">Publicado</option>
               <option value="draft">Borrador</option>
             </select>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600 dark:text-gray-400">Desde:</label>
+              <input
+                type="date"
+                defaultValue={postsFilters.date_from}
+                onBlur={(e) => handleFilterChange('date_from', e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600 dark:text-gray-400">Hasta:</label>
+              <input
+                type="date"
+                defaultValue={postsFilters.date_to}
+                onBlur={(e) => handleFilterChange('date_to', e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+              />
+            </div>
             <button
               onClick={handleSearch}
               disabled={isLoading}

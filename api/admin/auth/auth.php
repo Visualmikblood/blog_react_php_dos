@@ -72,7 +72,10 @@ switch ($data->action) {
 }
 
 function handleLogin($db, $data) {
+    error_log("DEBUG: handleLogin called with email: " . ($data->email ?? 'null') . ", password provided: " . (isset($data->password) ? 'yes' : 'no'));
+
     if (!isset($data->email) || !isset($data->password)) {
+        error_log("DEBUG: Missing email or password");
         http_response_code(400);
         echo json_encode(array("message" => "Email y contraseña requeridos."));
         return;
@@ -80,16 +83,21 @@ function handleLogin($db, $data) {
 
     $email = Helpers::sanitizeInput($data->email);
     $password = $data->password;
+    error_log("DEBUG: Sanitized email: " . $email);
 
     $query = "SELECT id, name, email, password, role FROM users WHERE email = :email AND (role = 'admin' OR role = 'author')";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':email', $email);
     $stmt->execute();
 
+    error_log("DEBUG: Query executed, rowCount: " . $stmt->rowCount());
+
     if ($stmt->rowCount() === 1) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        error_log("DEBUG: User found: " . $user['email'] . ", role: " . $user['role']);
 
         if (Helpers::verifyPassword($password, $user['password'])) {
+            error_log("DEBUG: Password verified successfully");
             // Generar JWT token simple (en producción usar library JWT)
             $token = base64_encode(json_encode([
                 'user_id' => $user['id'],
@@ -98,8 +106,10 @@ function handleLogin($db, $data) {
                 'exp' => time() + (24 * 60 * 60) // 24 horas
             ]));
 
+            error_log("DEBUG: Token generated: " . substr($token, 0, 20) . "...");
+
             http_response_code(200);
-            echo json_encode(array(
+            $response = json_encode(array(
                 "message" => "Login exitoso",
                 "token" => $token,
                 "user" => array(
@@ -109,11 +119,15 @@ function handleLogin($db, $data) {
                     "role" => $user['role']
                 )
             ));
+            error_log("DEBUG: Response being sent: " . $response);
+            echo $response;
         } else {
+            error_log("DEBUG: Password verification failed");
             http_response_code(401);
             echo json_encode(array("message" => "Credenciales inválidas."));
         }
     } else {
+        error_log("DEBUG: User not found or not admin/author");
         http_response_code(401);
         echo json_encode(array("message" => "Usuario no encontrado."));
     }

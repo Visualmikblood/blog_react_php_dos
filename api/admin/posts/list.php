@@ -43,6 +43,8 @@ $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 $status = isset($_GET['status']) ? $_GET['status'] : '';
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 $search = isset($_GET['search']) ? $_GET['search'] : '';
+$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
+$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 $author_only = isset($_GET['author_only']) && $_GET['author_only'] === 'true';
 
 $offset = ($page - 1) * $limit;
@@ -70,6 +72,16 @@ try {
     if ($search) {
         $where_conditions[] = "(p.title LIKE :search OR p.excerpt LIKE :search)";
         $params[':search'] = '%' . $search . '%';
+    }
+
+    if ($date_from) {
+        $where_conditions[] = "DATE(p.created_at) >= :date_from";
+        $params[':date_from'] = $date_from;
+    }
+
+    if ($date_to) {
+        $where_conditions[] = "DATE(p.created_at) <= :date_to";
+        $params[':date_to'] = $date_to;
     }
 
     $where_clause = empty($where_conditions) ? '1=1' : implode(' AND ', $where_conditions);
