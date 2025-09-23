@@ -292,9 +292,9 @@ function createComment($db, $postId) {
     }
 
     // Validar longitud del contenido
-    if (strlen($content) < 10 || strlen($content) > 1000) {
+    if (strlen($content) < 1 || strlen($content) > 1000) {
         http_response_code(400);
-        echo json_encode(array("message" => "El comentario debe tener entre 10 y 1000 caracteres."));
+        echo json_encode(array("message" => "El comentario debe tener entre 1 y 1000 caracteres."));
         return;
     }
 

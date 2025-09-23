@@ -2727,7 +2727,7 @@ const AdminPanel = () => {
               required
             />
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-              {commentData.content.length}/1000 caracteres
+              {commentData.content.length}/1000 caracteres (mínimo 1)
             </div>
           </div>
           <div className="flex justify-end">
