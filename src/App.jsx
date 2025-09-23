@@ -2666,14 +2666,17 @@ const AdminPanel = () => {
         setIsSubmitting(true);
 
         try {
-          await publicAPI.createComment(postId, commentData);
+          console.log('DEBUG: Enviando comentario:', { postId, commentData });
+          const response = await publicAPI.createComment(postId, commentData);
+          console.log('DEBUG: Respuesta de createComment:', response);
           showNotification('Comentario enviado exitosamente. Está pendiente de aprobación.');
           setCommentData({ author_name: '', author_email: '', content: '' });
           if (onCommentAdded) {
+            console.log('DEBUG: Ejecutando onCommentAdded callback');
             onCommentAdded();
           }
         } catch (error) {
-          console.error('Error creating comment:', error);
+          console.error('DEBUG: Error creating comment:', error);
           showNotification('Error al enviar el comentario: ' + error.message, 'error');
         } finally {
           setIsSubmitting(false);
