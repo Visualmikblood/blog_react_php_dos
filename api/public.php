@@ -227,7 +227,7 @@ function getPostById($db, $postId) {
                 'author_name' => $comment['author_name'] ?: $comment['author_name'],
                 'author_email' => $comment['author_email'],
                 'content' => $comment['content'],
-                'date' => date('Y-m-d H:i', strtotime($comment['created_at']))
+                'date' => date('Y-m-d H:i:s', strtotime($comment['created_at']))
             ];
         }, $comments)
     ];
@@ -320,7 +320,7 @@ function createComment($db, $postId) {
                 "author_email" => $author_email,
                 "content" => $content,
                 "status" => "pending",
-                "date" => date('Y-m-d H:i')
+                "date" => date('Y-m-d H:i:s')
             ]
         ]);
     } else {
