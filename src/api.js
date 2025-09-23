@@ -538,6 +538,22 @@ export const publicAPI = {
       }
       return response.json();
     });
+  },
+
+  incrementViews: (postId) => {
+    return fetch(`${API_BASE_URL}/public.php/public/posts/${postId}/views`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
   }
 };
 

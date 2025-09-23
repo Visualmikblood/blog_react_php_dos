@@ -2600,6 +2600,14 @@ const AdminPanel = () => {
         const response = await publicAPI.getPostById(postId);
         if (response.post) {
           setCurrentPost(response.post);
+          // Incrementar vistas cuando se carga el artículo
+          console.log('DEBUG: Intentando incrementar vistas para post', postId, 'usuario logueado:', !!user);
+          try {
+            await publicAPI.incrementViews(postId);
+            console.log('DEBUG: Vistas incrementadas exitosamente para post', postId);
+          } catch (error) {
+            console.error('DEBUG: Error incrementing views para post', postId, ':', error);
+          }
         }
       } catch (error) {
         console.error('Error loading post:', error);

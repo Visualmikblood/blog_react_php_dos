@@ -41,8 +41,8 @@ if (strpos($request_uri, '/uploads/') === 0) {
     exit();
 }
 
-// Verificar si la petición es para la API (/api/ o /admin/ o /public/)
-if (strpos($request_uri, '/api/') === 0 || strpos($request_uri, '/admin/') === 0 || strpos($request_uri, '/public/') === 0) {
+// Verificar si la petición es para la API (/api/ o /admin/)
+if (strpos($request_uri, '/api/') === 0 || strpos($request_uri, '/admin/') === 0) {
     $file_path = __DIR__ . '/api' . $request_uri;
 
     // Verificar que el archivo existe
@@ -55,6 +55,13 @@ if (strpos($request_uri, '/api/') === 0 || strpos($request_uri, '/admin/') === 0
     // Si no existe el archivo, devolver 404
     http_response_code(404);
     echo "API endpoint no encontrado";
+    exit();
+}
+
+// Verificar si la petición es para la API pública (/public/)
+if (strpos($request_uri, '/public/') === 0) {
+    // Todas las rutas /public/ van a api/public.php
+    include __DIR__ . '/api/public.php';
     exit();
 }
 
