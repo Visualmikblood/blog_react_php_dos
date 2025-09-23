@@ -153,7 +153,7 @@ function handleVerifyToken($db, $data) {
         }
 
         // Verificar que el usuario aún existe
-        $query = "SELECT id, name, email, role FROM users WHERE id = :id AND (role = 'admin' OR role = 'author')";
+        $query = "SELECT id, name, email, role, avatar, bio FROM users WHERE id = :id AND (role = 'admin' OR role = 'author')";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':id', $tokenData['user_id']);
         $stmt->execute();

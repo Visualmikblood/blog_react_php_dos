@@ -212,58 +212,7 @@ const AdminPanel = () => {
     showNotification('Sesión cerrada exitosamente');
   };
 
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
 
-    try {
-      const response = await usersAPI.updateProfile(localProfileData);
-      if (response.user) {
-        setUser(response.user);
-        showNotification('Perfil actualizado exitosamente');
-        setCurrentView('dashboard');
-      }
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      showNotification('Error al actualizar el perfil: ' + error.message, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
-      showNotification('Por favor selecciona un archivo de imagen válido', 'error');
-      return;
-    }
-
-    // Validar tamaño (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const response = await uploadAPI.uploadImage(formData);
-      if (response.image_url) {
-        setLocalProfileData(prev => ({ ...prev, avatar: response.image_url }));
-        showNotification('Imagen subida exitosamente');
-      }
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      showNotification('Error al subir la imagen: ' + error.message, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const loadProfileData = () => {
     if (user) {
@@ -1905,7 +1854,7 @@ const AdminPanel = () => {
         )}
       </div>
     );
-  };
+  }
 
   // Vista de Comentarios
   const CommentsView = () => {
@@ -2518,8 +2467,14 @@ const AdminPanel = () => {
     const [localProfileData, setLocalProfileData] = useState(initialProfileData);
 
     useEffect(() => {
-      // Solo actualizar si user existe y los datos locales están vacíos
-      if (user && !localProfileData.name && !localProfileData.email) {
+      return () => {
+        // Cleanup
+      };
+    }, []);
+
+    useEffect(() => {
+      // Sincronizar con el user global cuando cambie
+      if (user) {
         setLocalProfileData({
           name: user.name || '',
           email: user.email || '',
@@ -2527,7 +2482,64 @@ const AdminPanel = () => {
           avatar: user.avatar || ''
         });
       }
-    }, []); // Sin dependencias para evitar loops
+    }, [user]); // Dependencia en user para sincronizar cambios
+
+    const handleUpdateProfile = async (e) => {
+      e.preventDefault();
+      setIsLoading(true);
+  
+      try {
+        const response = await usersAPI.updateProfile(localProfileData);
+        if (response.user) {
+          setUser(response.user);
+          showNotification('Perfil actualizado exitosamente');
+          // No cambiar de vista automáticamente para mantener el estado local
+          // setCurrentView('dashboard');
+        }
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        showNotification('Error al actualizar el perfil: ' + error.message, 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const handleAvatarUpload = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        showNotification('Por favor selecciona un archivo de imagen válido', 'error');
+        return;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await uploadAPI.uploadImage(formData);
+        if (response.image_url) {
+          // Actualizar tanto el estado local como el global
+          setLocalProfileData(prev => ({ ...prev, avatar: response.image_url }));
+          // También actualizar el user global para que se refleje inmediatamente
+          setUser(prev => prev ? { ...prev, avatar: response.image_url } : null);
+          showNotification('Imagen subida exitosamente');
+        }
+      } catch (error) {
+        console.error('Error uploading avatar:', error);
+        showNotification('Error al subir la imagen: ' + error.message, 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     const handleAvatarClick = () => {
       if (avatarFileInputRef.current) {
@@ -2544,9 +2556,9 @@ const AdminPanel = () => {
            {/* Avatar */}
            <div className="flex items-center space-x-6">
              <div className="relative">
-               {localProfileData.avatar ? (
+               {user?.avatar ? (
                  <img
-                   src={localProfileData.avatar.startsWith('http') ? localProfileData.avatar : `${API_BASE_URL}${localProfileData.avatar}`}
+                   src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:8000${user.avatar}?t=${Date.now()}`}
                    alt="Avatar"
                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
                  />
@@ -3557,7 +3569,7 @@ const AdminPanel = () => {
                 <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
                   {user?.avatar ? (
                     <img
-                      src={user.avatar.startsWith('http') ? user.avatar : `${API_BASE_URL}${user.avatar}`}
+                      src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:8000${user.avatar}?t=${Date.now()}`}
                       alt="Avatar"
                       className="w-full h-full object-cover"
                     />

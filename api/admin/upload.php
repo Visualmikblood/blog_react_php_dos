@@ -42,7 +42,7 @@ if ($method !== 'POST') {
 }
 
 // Crear directorio de uploads si no existe
-$uploadDir = __DIR__ . '/../uploads/';
+$uploadDir = __DIR__ . '/../../uploads/';
 if (!file_exists($uploadDir)) {
     if (!mkdir($uploadDir, 0777, true)) {
         http_response_code(500);
