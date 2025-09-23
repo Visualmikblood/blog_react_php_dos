@@ -56,6 +56,9 @@ try {
         case 'PUT':
             handleUpdateUser($db);
             break;
+        case 'PATCH':
+            handleUpdateProfile($db);
+            break;
         case 'DELETE':
             handleDeleteUser($db);
             break;
@@ -193,6 +196,7 @@ function handleUpdateUser($db) {
     $email = Helpers::sanitizeInput($data->email);
     $role = isset($data->role) ? $data->role : 'user';
     $bio = isset($data->bio) ? Helpers::sanitizeInput($data->bio) : null;
+    $avatar = isset($data->avatar) ? $data->avatar : null;
 
     // Verificar que el usuario existe
     $check_query = "SELECT id FROM users WHERE id = :id";
@@ -219,12 +223,13 @@ function handleUpdateUser($db) {
         return;
     }
 
-    $query = "UPDATE users SET name = :name, email = :email, role = :role, bio = :bio WHERE id = :id";
+    $query = "UPDATE users SET name = :name, email = :email, role = :role, bio = :bio, avatar = :avatar WHERE id = :id";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':name', $name);
     $stmt->bindParam(':email', $email);
     $stmt->bindParam(':role', $role);
     $stmt->bindParam(':bio', $bio);
+    $stmt->bindParam(':avatar', $avatar);
     $stmt->bindParam(':id', $id);
 
     if ($stmt->execute()) {
@@ -233,6 +238,78 @@ function handleUpdateUser($db) {
     } else {
         http_response_code(503);
         echo json_encode(array("message" => "No se pudo actualizar el usuario."));
+    }
+}
+
+function handleUpdateProfile($db) {
+    $data = json_decode(file_get_contents("php://input"));
+
+    if (!isset($data->name) || !isset($data->email)) {
+        http_response_code(400);
+        echo json_encode(array("message" => "Nombre y email requeridos."));
+        return;
+    }
+
+    // Obtener el ID del usuario del token
+    $headers = apache_request_headers();
+    $token = str_replace('Bearer ', '', $headers['Authorization']);
+    $tokenData = json_decode(base64_decode($token), true);
+    $userId = $tokenData['user_id'];
+
+    $name = Helpers::sanitizeInput($data->name);
+    $email = Helpers::sanitizeInput($data->email);
+    $bio = isset($data->bio) ? Helpers::sanitizeInput($data->bio) : null;
+    $avatar = isset($data->avatar) ? $data->avatar : null;
+
+    // Verificar que el usuario existe
+    $check_query = "SELECT id FROM users WHERE id = :id";
+    $check_stmt = $db->prepare($check_query);
+    $check_stmt->bindParam(':id', $userId);
+    $check_stmt->execute();
+
+    if ($check_stmt->rowCount() === 0) {
+        http_response_code(404);
+        echo json_encode(array("message" => "Usuario no encontrado."));
+        return;
+    }
+
+    // Verificar que el email no existe (excepto para el mismo usuario)
+    $email_check_query = "SELECT id FROM users WHERE email = :email AND id != :id";
+    $email_check_stmt = $db->prepare($email_check_query);
+    $email_check_stmt->bindParam(':email', $email);
+    $email_check_stmt->bindParam(':id', $userId);
+    $email_check_stmt->execute();
+
+    if ($email_check_stmt->rowCount() > 0) {
+        http_response_code(400);
+        echo json_encode(array("message" => "Ya existe un usuario con ese email."));
+        return;
+    }
+
+    $query = "UPDATE users SET name = :name, email = :email, bio = :bio, avatar = :avatar WHERE id = :id";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':name', $name);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':bio', $bio);
+    $stmt->bindParam(':avatar', $avatar);
+    $stmt->bindParam(':id', $userId);
+
+    if ($stmt->execute()) {
+        // Obtener los datos actualizados del usuario
+        $select_query = "SELECT id, name, email, role, avatar, bio FROM users WHERE id = :id";
+        $select_stmt = $db->prepare($select_query);
+        $select_stmt->bindParam(':id', $userId);
+        $select_stmt->execute();
+        $updatedUser = $select_stmt->fetch(PDO::FETCH_ASSOC);
+
+        http_response_code(200);
+        echo json_encode(array(
+            "message" => "Perfil actualizado exitosamente.",
+            "user" => $updatedUser
+        ));
+    } else {
+        http_response_code(503);
+        echo json_encode(array("message" => "No se pudo actualizar el perfil."));
     }
 }
 

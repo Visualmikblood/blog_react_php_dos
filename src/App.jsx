@@ -52,6 +52,12 @@ const ThemeProvider = ({ children }) => {
 const AdminPanel = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [currentView, setCurrentView] = useState('welcome');
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: '',
+    bio: '',
+    avatar: ''
+  });
   const [isPublicView, setIsPublicView] = useState(false);
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -199,6 +205,70 @@ const AdminPanel = () => {
     setUser(null);
     setCurrentView('login');
     showNotification('Sesión cerrada exitosamente');
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await usersAPI.updateProfile(profileData);
+      if (response.user) {
+        setUser(response.user);
+        showNotification('Perfil actualizado exitosamente');
+        setCurrentView('dashboard');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showNotification('Error al actualizar el perfil: ' + error.message, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      showNotification('Por favor selecciona un archivo de imagen válido', 'error');
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await uploadAPI.uploadImage(formData);
+      if (response.image_url) {
+        setProfileData(prev => ({ ...prev, avatar: response.image_url }));
+        showNotification('Imagen subida exitosamente');
+      }
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      showNotification('Error al subir la imagen: ' + error.message, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadProfileData = () => {
+    if (user) {
+      setProfileData({
+        name: user.name || '',
+        email: user.email || '',
+        bio: user.bio || '',
+        avatar: user.avatar || ''
+      });
+    }
   };
 
   // Funciones de carga de datos
@@ -2423,6 +2493,134 @@ const AdminPanel = () => {
     );
   };
 
+  // Vista de Perfil
+  const ProfileView = () => {
+    const [avatarFileInput, setAvatarFileInput] = useState(null);
+
+    useEffect(() => {
+      loadProfileData();
+    }, [user]);
+
+    const handleAvatarClick = () => {
+      if (avatarFileInput) {
+        avatarFileInput.click();
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold mb-6 text-gray-800 dark:text-gray-200">Información del Perfil</h3>
+
+          <form onSubmit={handleUpdateProfile} className="space-y-6">
+            {/* Avatar */}
+            <div className="flex items-center space-x-6">
+              <div className="relative">
+                {profileData.avatar ? (
+                  <img
+                    src={profileData.avatar.startsWith('http') ? profileData.avatar : `${API_BASE_URL}${profileData.avatar}`}
+                    alt="Avatar"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                    <User className="w-12 h-12 text-white" />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={handleAvatarClick}
+                  className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors"
+                  title="Cambiar foto de perfil"
+                >
+                  <Upload className="w-4 h-4" />
+                </button>
+                <input
+                  ref={(input) => setAvatarFileInput(input)}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+              </div>
+              <div>
+                <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200">{user?.name}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{user?.email}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  Haz clic en el icono de subida para cambiar tu foto de perfil
+                </p>
+              </div>
+            </div>
+
+            {/* Campos del formulario */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nombre completo
+                </label>
+                <input
+                  type="text"
+                  value={profileData.name}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Correo electrónico
+                </label>
+                <input
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Biografía
+              </label>
+              <textarea
+                value={profileData.bio}
+                onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                placeholder="Cuéntanos un poco sobre ti..."
+                rows="4"
+                maxLength="500"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+              />
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+                {(profileData.bio || '').length}/500 caracteres
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+              <button
+                type="button"
+                onClick={() => setCurrentView('dashboard')}
+                className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {isLoading ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   // Vista de Configuración
   const SettingsView = () => {
     const [settingsForm, setSettingsForm] = useState({});
@@ -2649,6 +2847,7 @@ const AdminPanel = () => {
       { id: 'categories', label: 'Categorías', icon: Folder },
       { id: 'comments', label: 'Comentarios', icon: MessageSquare },
       { id: 'users', label: 'Usuarios', icon: Users },
+      { id: 'profile', label: 'Perfil', icon: User },
       { id: 'settings', label: 'Configuración', icon: Settings },
     ];
 
@@ -3301,6 +3500,7 @@ const AdminPanel = () => {
                 {currentView === 'categories' && 'Categorías'}
                 {currentView === 'comments' && 'Comentarios'}
                 {currentView === 'users' && 'Usuarios'}
+                {currentView === 'profile' && 'Mi Perfil'}
                 {currentView === 'settings' && 'Configuración'}
               </h1>
             </div>
@@ -3326,16 +3526,33 @@ const AdminPanel = () => {
                 )}
               </button>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar.startsWith('http') ? user.avatar : `${API_BASE_URL}${user.avatar}`}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.name || 'Admin User'}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'admin@blog.com'}</p>
                 </div>
                 <button
+                  onClick={() => { loadProfileData(); setCurrentView('profile'); }}
+                  className="ml-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs"
+                  title="Editar perfil"
+                >
+                  <User className="w-3 h-3" />
+                </button>
+                <button
                   onClick={handleLogout}
-                  className="ml-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                  className="ml-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
                   Salir
@@ -3356,6 +3573,8 @@ const AdminPanel = () => {
           {currentView === 'comments' && <CommentsView />}
 
           {currentView === 'users' && <UsersView />}
+
+          {currentView === 'profile' && <ProfileView />}
 
           {currentView === 'settings' && <SettingsView />}
         </main>

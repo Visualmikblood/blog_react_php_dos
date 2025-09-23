@@ -1,44 +1,42 @@
 // Configuración de la API
-export const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = 'http://localhost:8000/api';
 const USE_PROXY = false; // Cambiar a false para usar URLs directas
 
 // Función helper para hacer peticiones HTTP
 const apiRequest = async (endpoint, options = {}) => {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  };
+   const url = `${API_BASE_URL}${endpoint}`;
+   const config = {
+     headers: {
+       'Content-Type': 'application/json',
+       ...options.headers,
+     },
+     ...options,
+   };
 
-  // Agregar token de autenticación si existe
-  const token = localStorage.getItem('auth_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+   // Agregar token de autenticación si existe
+   const token = localStorage.getItem('auth_token');
+   if (token) {
+     config.headers.Authorization = `Bearer ${token}`;
+   }
 
-  // Asegurar que el body sea JSON válido
-  if (config.body && typeof config.body === 'object') {
-    config.body = JSON.stringify(config.body);
-  }
+   // Asegurar que el body sea JSON válido
+   if (config.body && typeof config.body === 'object') {
+     config.body = JSON.stringify(config.body);
+   }
 
-  try {
-    console.log('Enviando petición a:', url);
-    console.log('Configuración:', config);
-    const response = await fetch(url, config);
+   try {
+     const response = await fetch(url, config);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
+     if (!response.ok) {
+       const errorData = await response.json().catch(() => ({}));
+       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+     }
 
-    return await response.json();
-  } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
-  }
+     return await response.json();
+   } catch (error) {
+     console.error('API request failed:', error);
+     throw error;
+   }
 };
 
 // Funciones de autenticación
@@ -411,6 +409,49 @@ export const usersAPI = {
       headers: {
         'Authorization': token ? `Bearer ${token}` : undefined
       }
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
+  },
+
+  update: (userData) => {
+    const formData = new FormData();
+    formData.append('action', 'update');
+    Object.keys(userData).forEach(key => {
+      if (userData[key] !== null && userData[key] !== undefined) {
+        formData.append(key, userData[key]);
+      }
+    });
+
+    return fetch(`${API_BASE_URL}/admin/users/manage.php`, {
+      method: 'POST',
+      headers: {
+        'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
+      },
+      body: formData
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
+  },
+
+  updateProfile: (profileData) => {
+    return fetch(`${API_BASE_URL}/admin/users/manage.php`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
+      },
+      body: JSON.stringify(profileData)
     }).then(response => {
       if (!response.ok) {
         return response.json().then(errorData => {

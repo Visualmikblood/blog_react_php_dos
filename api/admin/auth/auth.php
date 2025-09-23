@@ -78,7 +78,7 @@ function handleLogin($db, $data) {
     $email = Helpers::sanitizeInput($data->email);
     $password = $data->password;
 
-    $query = "SELECT id, name, email, password, role FROM users WHERE email = :email AND (role = 'admin' OR role = 'author')";
+    $query = "SELECT id, name, email, password, role, avatar, bio FROM users WHERE email = :email AND (role = 'admin' OR role = 'author')";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':email', $email);
     $stmt->execute();
@@ -103,7 +103,9 @@ function handleLogin($db, $data) {
                     "id" => $user['id'],
                     "name" => $user['name'],
                     "email" => $user['email'],
-                    "role" => $user['role']
+                    "role" => $user['role'],
+                    "avatar" => $user['avatar'],
+                    "bio" => $user['bio']
                 )
             ));
         } else {
@@ -144,7 +146,14 @@ function handleVerifyToken($db, $data) {
             http_response_code(200);
             echo json_encode(array(
                 "valid" => true,
-                "user" => $user
+                "user" => array(
+                    "id" => $user['id'],
+                    "name" => $user['name'],
+                    "email" => $user['email'],
+                    "role" => $user['role'],
+                    "avatar" => $user['avatar'],
+                    "bio" => $user['bio']
+                )
             ));
         } else {
             http_response_code(401);
