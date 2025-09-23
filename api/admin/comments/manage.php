@@ -157,10 +157,10 @@ function handlePostActions($db) {
             handleDeleteCommentPost($db, $id);
             break;
         case 'bulk_delete':
-            handleBulkDeleteComments($db, $data->ids ?? []);
+            handleBulkDeleteComments($db, null); // Los datos se leen dentro de la función
             break;
         case 'bulk_update':
-            handleBulkUpdateComments($db, $data->updates ?? []);
+            handleBulkUpdateComments($db, null); // Los datos se leen dentro de la función
             break;
         default:
             http_response_code(400);
@@ -212,6 +212,11 @@ function handleDeleteCommentPost($db, $comment_id) {
 }
 
 function handleBulkDeleteComments($db, $commentIds) {
+    // Para FormData, los datos vienen en $_POST
+    if (isset($_POST['ids'])) {
+        $commentIds = json_decode($_POST['ids'], true);
+    }
+
     if (!is_array($commentIds) || empty($commentIds)) {
         http_response_code(400);
         echo json_encode(array("message" => "IDs de comentarios requeridos."));
@@ -235,6 +240,11 @@ function handleBulkDeleteComments($db, $commentIds) {
 }
 
 function handleBulkUpdateComments($db, $updates) {
+    // Para FormData, los datos vienen en $_POST
+    if (isset($_POST['updates'])) {
+        $updates = json_decode($_POST['updates'], true);
+    }
+
     if (!is_array($updates) || empty($updates)) {
         http_response_code(400);
         echo json_encode(array("message" => "Actualizaciones requeridas."));
@@ -243,14 +253,22 @@ function handleBulkUpdateComments($db, $updates) {
 
     $updatedCount = 0;
     foreach ($updates as $update) {
-        if (!isset($update->id) || !isset($update->status)) {
+        if (!isset($update['id']) || !isset($update['status'])) {
+            continue;
+        }
+
+        $id = (int)$update['id'];
+        $status = $update['status'];
+
+        // Validar que el status sea válido
+        if (!in_array($status, ['pending', 'approved', 'rejected'])) {
             continue;
         }
 
         $query = "UPDATE comments SET status = :status, updated_at = NOW() WHERE id = :id";
         $stmt = $db->prepare($query);
-        $stmt->bindParam(':status', $update->status);
-        $stmt->bindParam(':id', $update->id);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             $updatedCount++;
