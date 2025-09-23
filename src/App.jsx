@@ -2694,6 +2694,11 @@ const AdminPanel = () => {
   const PublicBlogView = ({ currentPost, setCurrentPost }) => {
     const [publicPosts, setPublicPosts] = useState([]);
     const [publicCategories, setPublicCategories] = useState([]);
+    const [publicPagination, setPublicPagination] = useState({
+      page: 1,
+      pages: 1,
+      total: 0
+    });
     const [publicFilters, setPublicFilters] = useState({
       page: 1,
       limit: 6,
@@ -2709,6 +2714,9 @@ const AdminPanel = () => {
         const response = await publicAPI.getPosts(publicFilters);
         if (response.posts) {
           setPublicPosts(response.posts);
+          if (response.pagination) {
+            setPublicPagination(response.pagination);
+          }
         }
       } catch (error) {
         console.error('Error loading public posts:', error);
@@ -2772,11 +2780,13 @@ const AdminPanel = () => {
 
     const handlePublicFilterChange = (filterType, value) => {
       setPublicFilters(prev => ({ ...prev, [filterType]: value, page: 1 }));
+      setPublicPagination(prev => ({ ...prev, page: 1 }));
     };
 
     const changePage = (newPage) => {
-      if (newPage < 1) return;
+      if (newPage < 1 || newPage > publicPagination.pages) return;
       setPublicFilters(prev => ({ ...prev, page: newPage }));
+      setPublicPagination(prev => ({ ...prev, page: newPage }));
     };
 
     const viewPost = (postId) => {
@@ -2787,6 +2797,7 @@ const AdminPanel = () => {
       setCurrentPost(null);
       setCurrentPostId(null);
       setPublicFilters(prev => ({ ...prev, page: 1 }));
+      setPublicPagination(prev => ({ ...prev, page: 1 }));
     };
 
     // Componente para el formulario de comentarios
@@ -3208,7 +3219,7 @@ const AdminPanel = () => {
           )}
 
           {/* Paginación */}
-          {publicPosts.length > 0 && (
+          {publicPosts.length > 0 && publicPagination.pages > 1 && (
             <div className="flex items-center justify-center gap-4 mt-8">
               <button
                 onClick={() => changePage(publicFilters.page - 1)}
@@ -3218,11 +3229,11 @@ const AdminPanel = () => {
                 Anterior
               </button>
               <span className="text-gray-700 dark:text-gray-300">
-                Página {publicFilters.page}
+                Página {publicFilters.page} de {publicPagination.pages}
               </span>
               <button
                 onClick={() => changePage(publicFilters.page + 1)}
-                disabled={publicPosts.length < publicFilters.limit}
+                disabled={publicFilters.page >= publicPagination.pages}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente
