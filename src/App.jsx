@@ -2044,7 +2044,14 @@ const AdminPanel = () => {
                           </div>
                           <p className="text-gray-700 dark:text-gray-300 mb-2">{comment.content}</p>
                           <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                            <span>{new Date(comment.created_at).toLocaleDateString()}</span>
+                            <span>{new Date(comment.created_at).toLocaleString('es-ES', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
+                            })}</span>
                             <span>{comment.author_email}</span>
                           </div>
                         </div>
@@ -3025,7 +3032,14 @@ const AdminPanel = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="font-medium text-gray-900 dark:text-white">{comment.author_name}</span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">{comment.date}</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{new Date(comment.created_at || comment.date).toLocaleString('es-ES', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
+                            })}</span>
                           </div>
                           <p className="text-gray-700 dark:text-gray-300">{comment.content}</p>
                         </div>
