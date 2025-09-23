@@ -61,6 +61,7 @@ const AdminPanel = () => {
   const [user, setUser] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [currentPostId, setCurrentPostId] = useState(null);
+  const [currentPost, setCurrentPost] = useState(null);
 
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [selectedPosts, setSelectedPosts] = useState([]);
@@ -170,26 +171,19 @@ const AdminPanel = () => {
     setIsLoading(true);
 
     try {
-      console.log('DEBUG: Intentando login con:', loginData);
       const response = await authAPI.login(loginData);
-      console.log('DEBUG: Respuesta completa del login:', response);
-      console.log('DEBUG: response.token existe?', !!response.token);
-      console.log('DEBUG: response.token valor:', response.token);
 
       if (response.token) {
-        console.log('DEBUG: Token encontrado, guardando y redirigiendo');
         localStorage.setItem('auth_token', response.token);
         setIsAuthenticated(true);
         setUser(response.user);
         setCurrentView('dashboard');
         showNotification('Inicio de sesión exitoso');
       } else {
-        console.log('DEBUG: No hay token en respuesta, mostrando error');
         showNotification(response.message || 'Error en el inicio de sesión', 'error');
       }
     } catch (error) {
-      console.error('DEBUG: Login error:', error);
-      console.error('DEBUG: Error details:', error.message);
+      console.error('Login error:', error);
       showNotification('Error al iniciar sesión: ' + error.message, 'error');
     } finally {
       setIsLoading(false);
@@ -711,7 +705,11 @@ const AdminPanel = () => {
                   {post.status === 'published' ? 'Publicado' : 'Borrador'}
                 </span>
                 <button
-                  onClick={() => { setIsPublicView(true); setCurrentPostId(post.id); }}
+                  onClick={() => {
+                    setCurrentPost(null); // Limpiar post anterior para forzar carga
+                    setIsPublicView(true);
+                    setCurrentPostId(post.id);
+                  }}
                   className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
                   title="Ver artículo"
                 >
@@ -935,14 +933,13 @@ const AdminPanel = () => {
                     <td className="w-40 py-4 px-4">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => { setIsPublicView(true); setCurrentPostId(post.id); }}
-                          className={`${
-                            post.status === 'published'
-                              ? 'text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300'
-                              : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                          }`}
-                          title={post.status === 'published' ? 'Ver artículo' : 'Solo artículos publicados pueden verse'}
-                          disabled={post.status !== 'published'}
+                          onClick={() => {
+                            setCurrentPost(null); // Limpiar post anterior para forzar carga
+                            setIsPublicView(true);
+                            setCurrentPostId(post.id);
+                          }}
+                          className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+                          title="Ver artículo"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -2557,16 +2554,16 @@ const AdminPanel = () => {
   };
 
   // Vista Pública del Blog
-  const PublicBlogView = () => {
+  const PublicBlogView = ({ currentPost, setCurrentPost }) => {
     const [publicPosts, setPublicPosts] = useState([]);
     const [publicCategories, setPublicCategories] = useState([]);
-    const [currentPost, setCurrentPost] = useState(null);
     const [publicFilters, setPublicFilters] = useState({
       page: 1,
       limit: 6,
       category: '',
       search: ''
     });
+    const loadingPostRef = useRef(null);
     const [isLoadingPublic, setIsLoadingPublic] = useState(false);
 
     const loadPublicPosts = useCallback(async () => {
@@ -2601,12 +2598,14 @@ const AdminPanel = () => {
         if (response.post) {
           setCurrentPost(response.post);
           // Incrementar vistas cuando se carga el artículo
-          console.log('DEBUG: Intentando incrementar vistas para post', postId, 'usuario logueado:', !!user);
           try {
-            await publicAPI.incrementViews(postId);
-            console.log('DEBUG: Vistas incrementadas exitosamente para post', postId);
+            const viewsResponse = await publicAPI.incrementViews(postId);
+            if (viewsResponse.views) {
+              // Actualizar las vistas en currentPost para mostrar el contador actualizado
+              setCurrentPost(prev => ({ ...prev, views: viewsResponse.views }));
+            }
           } catch (error) {
-            console.error('DEBUG: Error incrementing views para post', postId, ':', error);
+            console.error('Error incrementing views:', error);
           }
         }
       } catch (error) {
@@ -2621,15 +2620,18 @@ const AdminPanel = () => {
       if (isPublicView) {
         if (currentPost || currentPostId) {
           // Si estamos viendo un post individual, no recargamos la lista
-          if (currentPostId && !currentPost) {
+          if (currentPostId && !currentPost && loadingPostRef.current !== currentPostId) {
+            loadingPostRef.current = currentPostId;
             loadPostById(currentPostId);
           }
           return;
         }
         loadPublicPosts();
         loadPublicCategories();
+      } else {
+        loadingPostRef.current = null;
       }
-    }, [isPublicView, loadPublicPosts, loadPublicCategories, currentPost, currentPostId]);
+    }, [isPublicView, loadPublicPosts, loadPublicCategories, currentPostId]);
 
     const handlePublicFilterChange = (filterType, value) => {
       setPublicFilters(prev => ({ ...prev, [filterType]: value, page: 1 }));
@@ -2773,6 +2775,7 @@ const AdminPanel = () => {
                   <button
                     onClick={() => {
                       setIsPublicView(false);
+                      setCurrentPost(null);
                       setCurrentPostId(null);
                       setCurrentView('dashboard');
                     }}
@@ -2805,6 +2808,19 @@ const AdminPanel = () => {
           </header>
 
           <main className="max-w-4xl mx-auto px-6 py-8">
+            {/* Banner para posts en draft */}
+            {currentPost.status !== 'published' && (
+              <div className="mb-6 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-400 dark:border-yellow-600 rounded-lg p-4">
+                <div className="flex items-center">
+                  <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3" />
+                  <div>
+                    <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Artículo en borrador</h3>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">Este artículo no está publicado y solo es visible para administradores.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <article className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
               {currentPost.featured_image && (
                 <img
@@ -2825,6 +2841,10 @@ const AdminPanel = () => {
                   <span className="flex items-center gap-2">
                     <User className="w-4 h-4" />
                     {currentPost.author}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    {currentPost.views || 0} vistas
                   </span>
                   <span className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
@@ -3105,7 +3125,7 @@ const AdminPanel = () => {
   }
 
   if (isPublicView) {
-    return <PublicBlogView />;
+    return <PublicBlogView currentPost={currentPost} setCurrentPost={setCurrentPost} />;
   }
 
   return (

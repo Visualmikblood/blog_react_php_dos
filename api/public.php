@@ -37,16 +37,16 @@ function handlePublicGet($db) {
     $request_uri = $_SERVER['REQUEST_URI'];
 
     // Obtener artículo individual (DEBE IR PRIMERO - patrón más específico)
-    if (preg_match('/\/public\/posts\/(\d+)/', $request_uri, $matches)) {
+    if (preg_match('/\/public\.php\/public\/posts\/(\d+)/', $request_uri, $matches)) {
         $postId = $matches[1];
         getPostById($db, $postId);
     }
     // Obtener artículos publicados
-    elseif (strpos($request_uri, '/public/posts') !== false) {
+    elseif (strpos($request_uri, '/public.php/public/posts') !== false) {
         getPublishedPosts($db);
     }
     // Obtener categorías
-    elseif (strpos($request_uri, '/public/categories') !== false) {
+    elseif (strpos($request_uri, '/public.php/public/categories') !== false) {
         getCategories($db);
     }
     else {
@@ -57,22 +57,18 @@ function handlePublicGet($db) {
 
 function handlePublicPost($db) {
     $request_uri = $_SERVER['REQUEST_URI'];
-    error_log("DEBUG: handlePublicPost called with REQUEST_URI: " . $request_uri);
 
     // Crear comentario en un artículo
-    if (preg_match('/\/public\/posts\/(\d+)\/comments/', $request_uri, $matches)) {
-        error_log("DEBUG: Matched comments endpoint for post: " . $matches[1]);
+    if (preg_match('/\/public\.php\/public\/posts\/(\d+)\/comments/', $request_uri, $matches)) {
         $postId = $matches[1];
         createComment($db, $postId);
     }
     // Incrementar vistas de un artículo
-    elseif (preg_match('/\/public\/posts\/(\d+)\/views/', $request_uri, $matches)) {
-        error_log("DEBUG: Matched views endpoint for post: " . $matches[1]);
+    elseif (preg_match('/\/public\.php\/public\/posts\/(\d+)\/views/', $request_uri, $matches)) {
         $postId = $matches[1];
         incrementViews($db, $postId);
     }
     else {
-        error_log("DEBUG: No endpoint matched for REQUEST_URI: " . $request_uri);
         http_response_code(404);
         echo json_encode(array("message" => "Endpoint no encontrado."));
     }
@@ -180,7 +176,7 @@ function getPostById($db, $postId) {
               LEFT JOIN categories c ON p.category_id = c.id
               LEFT JOIN users u ON p.author_id = u.id
               LEFT JOIN comments co ON p.id = co.post_id AND co.status = 'approved'
-              WHERE p.id = :id AND p.status = 'published'
+              WHERE p.id = :id
               GROUP BY p.id";
 
     $stmt = $db->prepare($query);
@@ -215,6 +211,7 @@ function getPostById($db, $postId) {
         'title' => $post['title'],
         'excerpt' => $post['excerpt'],
         'content' => $post['content'],
+        'status' => $post['status'],
         'category' => $post['category_name'] ?: 'Sin categoría',
         'category_slug' => $post['category_slug'],
         'author' => $post['author_name'] ?: 'Anónimo',
@@ -222,6 +219,7 @@ function getPostById($db, $postId) {
         'date' => date('Y-m-d H:i:s', strtotime($post['created_at'])),
         'featured_image' => $post['featured_image'],
         'comments_count' => (int)$post['comments_count'],
+        'views' => (int)$post['views'],
         'read_time' => $post['read_time'] ? str_replace('read', 'lectura', $post['read_time']) : '5 min lectura',
         'comments' => array_map(function($comment) {
             return [
@@ -332,8 +330,6 @@ function createComment($db, $postId) {
 }
 
 function incrementViews($db, $postId) {
-    error_log("DEBUG: incrementViews called for postId: " . $postId);
-
     // Verificar que el artículo existe (quitamos restricción de publicado para que funcione también para admins viendo borradores)
     $postQuery = "SELECT id, views FROM posts WHERE id = :id";
     $postStmt = $db->prepare($postQuery);
@@ -343,30 +339,26 @@ function incrementViews($db, $postId) {
     $post = $postStmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$post) {
-        error_log("DEBUG: Post not found for incrementViews: " . $postId);
         http_response_code(404);
         echo json_encode(array("message" => "Artículo no encontrado."));
         return;
     }
 
-    error_log("DEBUG: Current views for post " . $postId . ": " . $post['views']);
-
     // Incrementar vistas
     $newViews = (int)$post['views'] + 1;
+
     $updateQuery = "UPDATE posts SET views = :views WHERE id = :id";
     $updateStmt = $db->prepare($updateQuery);
     $updateStmt->bindParam(':views', $newViews, PDO::PARAM_INT);
     $updateStmt->bindParam(':id', $postId, PDO::PARAM_INT);
 
     if ($updateStmt->execute()) {
-        error_log("DEBUG: Views incremented successfully for post " . $postId . " to " . $newViews);
         http_response_code(200);
         echo json_encode([
             "message" => "Vista incrementada exitosamente.",
             "views" => $newViews
         ]);
     } else {
-        error_log("DEBUG: Error incrementing views for post " . $postId);
         http_response_code(500);
         echo json_encode(array("message" => "Error al incrementar vistas."));
     }
