@@ -1,5 +1,11 @@
 <?php
 // api/admin/auth.php - Sistema de autenticación
+
+// Desactivar la salida de errores HTML para asegurar JSON válido
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+// Headers CORS y JSON
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
@@ -10,6 +16,12 @@ include_once __DIR__ . '/../../utils/helpers.php';
 
 $database = new Database();
 $db = $database->connect();
+
+if (!$db) {
+    http_response_code(500);
+    echo json_encode(array("message" => "Error de conexión a la base de datos."));
+    exit();
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -127,6 +139,12 @@ function handleVerifyToken($db, $data) {
 
     try {
         $tokenData = json_decode(base64_decode($data->token), true);
+
+        if (!$tokenData || !isset($tokenData['exp'])) {
+            http_response_code(401);
+            echo json_encode(array("message" => "Token inválido."));
+            return;
+        }
 
         if ($tokenData['exp'] < time()) {
             http_response_code(401);

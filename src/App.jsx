@@ -170,6 +170,11 @@ const AdminPanel = () => {
       }
     } catch (error) {
       console.error('Error verifying token:', error);
+      // Si hay un error de parsing JSON (HTML devuelto), limpiar token
+      if (error.message && error.message.includes('JSON')) {
+        console.log('Token inválido detectado, limpiando localStorage');
+        localStorage.removeItem('auth_token');
+      }
       localStorage.removeItem('auth_token');
       setCurrentView('login');
     }
@@ -212,7 +217,7 @@ const AdminPanel = () => {
     setIsLoading(true);
 
     try {
-      const response = await usersAPI.updateProfile(profileData);
+      const response = await usersAPI.updateProfile(localProfileData);
       if (response.user) {
         setUser(response.user);
         showNotification('Perfil actualizado exitosamente');
@@ -249,7 +254,7 @@ const AdminPanel = () => {
 
       const response = await uploadAPI.uploadImage(formData);
       if (response.image_url) {
-        setProfileData(prev => ({ ...prev, avatar: response.image_url }));
+        setLocalProfileData(prev => ({ ...prev, avatar: response.image_url }));
         showNotification('Imagen subida exitosamente');
       }
     } catch (error) {
@@ -475,7 +480,7 @@ const AdminPanel = () => {
         }
       } catch (error) {
         // Si falla la API pública, usar datos del admin (ya preparados arriba)
-        console.log('Usando datos del admin para edición');
+        // console.log('Usando datos del admin para edición');
       }
 
       setEditorForm({ id: post.id });
@@ -1123,7 +1128,7 @@ const AdminPanel = () => {
 
 
   // Editor de Artículos
-  const ArticleEditor = React.memo(({ localForm, setLocalForm }) => {
+  const ArticleEditor = ({ localForm, setLocalForm }) => {
 
       const titleRef = useRef(null);
       const excerptRef = useRef(null);
@@ -1175,7 +1180,7 @@ const AdminPanel = () => {
       const file = e.target.files[0];
       if (!file) return;
 
-      console.log('handleImageUpload - file selected:', file.name, 'type:', file.type, 'size:', file.size);
+      // console.log('handleImageUpload - file selected:', file.name, 'type:', file.type, 'size:', file.size);
 
       // Validar tipo de archivo
       if (!file.type.startsWith('image/')) {
@@ -1191,7 +1196,7 @@ const AdminPanel = () => {
 
       // Mostrar vista previa local inmediatamente
       const previewUrl = URL.createObjectURL(file);
-      console.log('handleImageUpload - setting local preview:', previewUrl);
+      // console.log('handleImageUpload - setting local preview:', previewUrl);
       // No actualizar localForm con preview para evitar re-renders
 
       setIsLoading(true);
@@ -1199,22 +1204,22 @@ const AdminPanel = () => {
         const formData = new FormData();
         formData.append('image', file);
 
-        console.log('Subiendo imagen...');
+        // console.log('Subiendo imagen...');
         const response = await uploadAPI.uploadImage(formData);
-        console.log('Imagen subida exitosamente:', response.image_url);
+        // console.log('Imagen subida exitosamente:', response.image_url);
 
         // Reemplazar la vista previa local con la URL del servidor
         URL.revokeObjectURL(previewUrl); // Liberar memoria
-        console.log('handleImageUpload - replacing with server URL:', response.image_url);
+        // console.log('handleImageUpload - replacing with server URL:', response.image_url);
         setLocalForm(prev => {
           const newForm = { ...prev, featured_image: response.image_url };
-          console.log('handleImageUpload - localForm updated to:', newForm);
+          // console.log('handleImageUpload - localForm updated to:', newForm);
           return newForm;
         });
         // Actualizar la ref y localStorage inmediatamente
         featuredImageRef.current = response.image_url;
         localStorage.setItem('temp_featured_image', response.image_url);
-        console.log('handleImageUpload - featuredImageRef updated to:', response.image_url);
+        // console.log('handleImageUpload - featuredImageRef updated to:', response.image_url);
 
         showNotification('Imagen subida exitosamente');
       } catch (error) {
@@ -1229,8 +1234,8 @@ const AdminPanel = () => {
     }, []);
 
     const handleSavePost = async () => {
-      console.log('handleSavePost - localForm at start:', localForm);
-      console.log('handleSavePost - localForm.featured_image at start:', localForm.featured_image);
+      // console.log('handleSavePost - localForm at start:', localForm);
+      // console.log('handleSavePost - localForm.featured_image at start:', localForm.featured_image);
 
       // Obtener valores actuales del estado local
       const currentTitle = title || '';
@@ -1266,10 +1271,10 @@ const AdminPanel = () => {
           tags: Array.isArray(editorLocalForm.tags) ? editorLocalForm.tags.filter(tag => tag.trim() !== '') : []
         };
 
-        console.log('handleSavePost - Datos a enviar:', postData);
-        console.log('handleSavePost - tempImage:', tempImage);
-        console.log('handleSavePost - featuredImageRef.current:', featuredImageRef.current);
-        console.log('handleSavePost - finalImage:', finalImage);
+        // console.log('handleSavePost - Datos a enviar:', postData);
+        // console.log('handleSavePost - tempImage:', tempImage);
+        // console.log('handleSavePost - featuredImageRef.current:', featuredImageRef.current);
+        // console.log('handleSavePost - finalImage:', finalImage);
 
         // Limpiar localStorage después de usarlo
         if (tempImage) {
@@ -1279,13 +1284,13 @@ const AdminPanel = () => {
         if (editorForm.id) {
           // Actualizar post existente
           postData.id = editorForm.id;
-          console.log('Actualizando post existente con ID:', postData.id);
+          // console.log('Actualizando post existente con ID:', postData.id);
           await postsAPI.update(postData);
           setSaveStatus('saved');
           showNotification('Artículo actualizado exitosamente');
         } else {
           // Crear nuevo post
-          console.log('Creando nuevo post');
+          // console.log('Creando nuevo post');
           await postsAPI.create(postData);
           setSaveStatus('saved');
           showNotification('Artículo creado exitosamente');
@@ -1551,9 +1556,9 @@ const AdminPanel = () => {
                     src={localForm.featured_image.startsWith('http') || localForm.featured_image.startsWith('blob:') ? localForm.featured_image : `${API_BASE_URL}${localForm.featured_image}`}
                     alt="Imagen destacada"
                     className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
-                    onLoad={() => console.log('Imagen cargada correctamente')}
-                    onError={(e) => console.log('Error cargando imagen:', e.target.src)}
-                    ref={(img) => { if (img) console.log('Rendering image with src:', img.src); }}
+                    // onLoad={() => console.log('Imagen cargada correctamente')}
+                    // onError={(e) => console.log('Error cargando imagen:', e.target.src)}
+                    // ref={(img) => { if (img) console.log('Rendering image with src:', img.src); }}
                   />
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -1695,7 +1700,7 @@ const AdminPanel = () => {
         </div>
       </div>
     );
-  });
+  };
 
   // Vista de Categorías
   const CategoriesView = () => {
@@ -2495,15 +2500,38 @@ const AdminPanel = () => {
 
   // Vista de Perfil
   const ProfileView = () => {
-    const [avatarFileInput, setAvatarFileInput] = useState(null);
+    const avatarFileInputRef = useRef(null);
+
+    // Inicializar profileData con datos del user si están disponibles
+    const initialProfileData = user ? {
+      name: user.name || '',
+      email: user.email || '',
+      bio: user.bio || '',
+      avatar: user.avatar || ''
+    } : {
+      name: '',
+      email: '',
+      bio: '',
+      avatar: ''
+    };
+
+    const [localProfileData, setLocalProfileData] = useState(initialProfileData);
 
     useEffect(() => {
-      loadProfileData();
-    }, [user]);
+      // Solo actualizar si user existe y los datos locales están vacíos
+      if (user && !localProfileData.name && !localProfileData.email) {
+        setLocalProfileData({
+          name: user.name || '',
+          email: user.email || '',
+          bio: user.bio || '',
+          avatar: user.avatar || ''
+        });
+      }
+    }, []); // Sin dependencias para evitar loops
 
     const handleAvatarClick = () => {
-      if (avatarFileInput) {
-        avatarFileInput.click();
+      if (avatarFileInputRef.current) {
+        avatarFileInputRef.current.click();
       }
     };
 
@@ -2513,90 +2541,90 @@ const AdminPanel = () => {
           <h3 className="text-lg font-semibold mb-6 text-gray-800 dark:text-gray-200">Información del Perfil</h3>
 
           <form onSubmit={handleUpdateProfile} className="space-y-6">
-            {/* Avatar */}
-            <div className="flex items-center space-x-6">
-              <div className="relative">
-                {profileData.avatar ? (
-                  <img
-                    src={profileData.avatar.startsWith('http') ? profileData.avatar : `${API_BASE_URL}${profileData.avatar}`}
-                    alt="Avatar"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                    <User className="w-12 h-12 text-white" />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={handleAvatarClick}
-                  className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors"
-                  title="Cambiar foto de perfil"
-                >
-                  <Upload className="w-4 h-4" />
-                </button>
-                <input
-                  ref={(input) => setAvatarFileInput(input)}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                />
-              </div>
-              <div>
-                <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200">{user?.name}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{user?.email}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                  Haz clic en el icono de subida para cambiar tu foto de perfil
-                </p>
-              </div>
-            </div>
+           {/* Avatar */}
+           <div className="flex items-center space-x-6">
+             <div className="relative">
+               {localProfileData.avatar ? (
+                 <img
+                   src={localProfileData.avatar.startsWith('http') ? localProfileData.avatar : `${API_BASE_URL}${localProfileData.avatar}`}
+                   alt="Avatar"
+                   className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
+                 />
+               ) : (
+                 <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                   <User className="w-12 h-12 text-white" />
+                 </div>
+               )}
+               <button
+                 type="button"
+                 onClick={handleAvatarClick}
+                 className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors"
+                 title="Cambiar foto de perfil"
+               >
+                 <Upload className="w-4 h-4" />
+               </button>
+               <input
+                 ref={avatarFileInputRef}
+                 type="file"
+                 accept="image/*"
+                 onChange={handleAvatarUpload}
+                 className="hidden"
+               />
+             </div>
+             <div>
+               <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200">{user?.name}</h4>
+               <p className="text-sm text-gray-600 dark:text-gray-400">{user?.email}</p>
+               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                 Haz clic en el icono de subida para cambiar tu foto de perfil
+               </p>
+             </div>
+           </div>
 
-            {/* Campos del formulario */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Nombre completo
-                </label>
-                <input
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                  required
-                />
-              </div>
+           {/* Campos del formulario */}
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div>
+               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                 Nombre completo
+               </label>
+               <input
+                 type="text"
+                 value={localProfileData.name}
+                 onChange={(e) => setLocalProfileData(prev => ({ ...prev, name: e.target.value }))}
+                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                 required
+               />
+             </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Correo electrónico
-                </label>
-                <input
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                  required
-                />
-              </div>
-            </div>
+             <div>
+               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                 Correo electrónico
+               </label>
+               <input
+                 type="email"
+                 value={localProfileData.email}
+                 onChange={(e) => setLocalProfileData(prev => ({ ...prev, email: e.target.value }))}
+                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                 required
+               />
+             </div>
+           </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Biografía
-              </label>
-              <textarea
-                value={profileData.bio}
-                onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
-                placeholder="Cuéntanos un poco sobre ti..."
-                rows="4"
-                maxLength="500"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-              />
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                {(profileData.bio || '').length}/500 caracteres
-              </div>
-            </div>
+           <div>
+             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+               Biografía
+             </label>
+             <textarea
+               value={localProfileData.bio}
+               onChange={(e) => setLocalProfileData(prev => ({ ...prev, bio: e.target.value }))}
+               placeholder="Cuéntanos un poco sobre ti..."
+               rows="4"
+               maxLength="500"
+               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+             />
+             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+               {(localProfileData.bio || '').length}/500 caracteres
+             </div>
+           </div>
 
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-600">
               <button
@@ -3013,17 +3041,17 @@ const AdminPanel = () => {
         setIsSubmitting(true);
 
         try {
-          console.log('DEBUG: Enviando comentario:', { postId, commentData });
+          // console.log('DEBUG: Enviando comentario:', { postId, commentData });
           const response = await publicAPI.createComment(postId, commentData);
-          console.log('DEBUG: Respuesta de createComment:', response);
+          // console.log('DEBUG: Respuesta de createComment:', response);
           showNotification('Comentario enviado exitosamente. Está pendiente de aprobación.');
           setCommentData({ author_name: '', author_email: '', content: '' });
           if (onCommentAdded) {
-            console.log('DEBUG: Ejecutando onCommentAdded callback');
+            // console.log('DEBUG: Ejecutando onCommentAdded callback');
             onCommentAdded();
           }
         } catch (error) {
-          console.error('DEBUG: Error creating comment:', error);
+          // console.error('DEBUG: Error creating comment:', error);
           showNotification('Error al enviar el comentario: ' + error.message, 'error');
         } finally {
           setIsSubmitting(false);
@@ -3177,8 +3205,8 @@ const AdminPanel = () => {
                   src={currentPost.featured_image.startsWith('http') ? currentPost.featured_image : `${API_BASE_URL}${currentPost.featured_image}`}
                   alt={currentPost.title}
                   className="w-full h-64 object-cover"
-                  onLoad={() => console.log('Imagen cargada en post individual:', currentPost.featured_image)}
-                  onError={(e) => console.log('Error cargando imagen en post individual:', currentPost.featured_image, e)}
+                  // onLoad={() => console.log('Imagen cargada en post individual:', currentPost.featured_image)}
+                  // onError={(e) => console.log('Error cargando imagen en post individual:', currentPost.featured_image, e)}
                 />
               )}
   
@@ -3358,8 +3386,8 @@ const AdminPanel = () => {
                       src={post.featured_image.startsWith('http') ? post.featured_image : `${API_BASE_URL}${post.featured_image}`}
                       alt={post.title}
                       className="w-full h-48 object-cover"
-                      onLoad={() => console.log('Imagen cargada en lista:', post.featured_image)}
-                      onError={(e) => console.log('Error cargando imagen en lista:', post.featured_image, e)}
+                      // onLoad={() => console.log('Imagen cargada en lista:', post.featured_image)}
+                      // onError={(e) => console.log('Error cargando imagen en lista:', post.featured_image, e)}
                     />
                   )}
 
@@ -3544,7 +3572,7 @@ const AdminPanel = () => {
                   <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'admin@blog.com'}</p>
                 </div>
                 <button
-                  onClick={() => { loadProfileData(); setCurrentView('profile'); }}
+                  onClick={() => setCurrentView('profile')}
                   className="ml-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs"
                   title="Editar perfil"
                 >
