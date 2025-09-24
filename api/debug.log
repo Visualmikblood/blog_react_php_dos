@@ -50,3 +50,15 @@
 2025-09-24 13:02:49 create.php - featured_image asignado: /uploads/img_68d3cfd6b246f4.00148191.jpg
 2025-09-24 13:02:49 Post::create - featured_image: /uploads/img_68d3cfd6b246f4.00148191.jpg
 2025-09-24 13:02:49 Post::create - Query ejecutada exitosamente
+2025-09-24 14:43:04 create.php - data received: {"title":"sdfsdf","excerpt":"fsdf","content":"dfsdf","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d3e74e4afc35.30937736.jpg","tags":["qs"]}
+2025-09-24 14:43:04 create.php - featured_image asignado: /uploads/img_68d3e74e4afc35.30937736.jpg
+2025-09-24 14:43:04 Post::create - featured_image: /uploads/img_68d3e74e4afc35.30937736.jpg
+2025-09-24 14:43:04 Post::create - Query ejecutada exitosamente
+2025-09-24 16:36:29 create.php - data received: {"title":"asdf","excerpt":"asdf","content":"asdfasfd","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d401e8bb3821.89929437.png","tags":["a"]}
+2025-09-24 16:36:29 create.php - featured_image asignado: /uploads/img_68d401e8bb3821.89929437.png
+2025-09-24 16:36:29 Post::create - featured_image: /uploads/img_68d401e8bb3821.89929437.png
+2025-09-24 16:36:29 Post::create - Query ejecutada exitosamente
+2025-09-24 16:53:18 create.php - data received: {"title":"sdf","excerpt":"sdf","content":"dfsdf","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d405dc0e7474.85553465.jpg","tags":["s"]}
+2025-09-24 16:53:18 create.php - featured_image asignado: /uploads/img_68d405dc0e7474.85553465.jpg
+2025-09-24 16:53:18 Post::create - featured_image: /uploads/img_68d405dc0e7474.85553465.jpg
+2025-09-24 16:53:18 Post::create - Query ejecutada exitosamente

@@ -580,16 +580,22 @@ export const publicAPI = {
     });
   },
 
-  getPostById: (postId) => fetch(`${API_BASE_URL}/public/posts/${postId}`, {
-    method: 'GET'
-  }).then(response => {
-    if (!response.ok) {
-      return response.json().then(errorData => {
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      });
-    }
-    return response.json();
-  }),
+  getPostById: (postId) => {
+    const token = localStorage.getItem('auth_token');
+    return fetch(`${API_BASE_URL}/public/posts/${postId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : undefined
+      }
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
+  },
 
   getCategories: () => fetch(`${API_BASE_URL}/public/categories`, {
     method: 'GET'

@@ -51,6 +51,94 @@ const ThemeProvider = ({ children }) => {
 
 const AdminPanel = () => {
   const { isDarkMode, toggleTheme } = useTheme();
+
+  // Componente para renderizar párrafos con imágenes seguras
+  const MarkdownParagraph = ({ content }) => {
+    // Reemplazar imágenes markdown con placeholders
+    const processedContent = content.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+      const fullSrc = src.startsWith('http') || src.startsWith('blob:') ? src : `${API_BASE_URL}${src}`;
+      return `[IMAGE:${fullSrc}:${alt}]`;
+    });
+
+    // Dividir por imágenes y renderizar
+    const parts = processedContent.split(/(\[IMAGE:[^\]]+\])/);
+
+    return (
+      <p className="mb-4 leading-relaxed text-gray-800 dark:text-gray-200">
+        {parts.map((part, index) => {
+          if (part.startsWith('[IMAGE:')) {
+            const [, src, alt] = part.match(/\[IMAGE:([^:]+):(.+)\]/);
+            return (
+              <SafeImage
+                key={`image-${index}`}
+                src={src}
+                alt={alt}
+                className="max-w-full h-auto rounded-lg shadow-md my-4"
+              />
+            );
+          }
+          return part ? (
+            <span key={`text-${index}`} className="whitespace-pre-wrap">
+              {part}
+            </span>
+          ) : null;
+        })}
+      </p>
+    );
+  };
+
+  // Componente Image seguro con manejo robusto de errores
+  const SafeImage = ({ src, alt, className, onError, ...props }) => {
+    const [imageError, setImageError] = useState(() => {
+      // Verificar si esta imagen ya falló anteriormente
+      const failedImages = JSON.parse(localStorage.getItem('failed_images') || '[]');
+      return failedImages.includes(src);
+    });
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    const handleLoad = () => {
+      setIsLoading(false);
+    };
+
+    const handleError = (e) => {
+      console.log('Imagen falló:', src);
+      setImageError(true);
+      setIsLoading(false);
+
+      // Guardar en localStorage que esta imagen falló
+      const failedImages = JSON.parse(localStorage.getItem('failed_images') || '[]');
+      if (!failedImages.includes(src)) {
+        failedImages.push(src);
+        localStorage.setItem('failed_images', JSON.stringify(failedImages));
+      }
+
+      if (onError) onError(e);
+    };
+
+    // Si ya hubo error, no renderizar nada para evitar bucles
+    if (imageError) {
+      return null;
+    }
+
+    return (
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded">
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
+          </div>
+        )}
+        <img
+          src={src}
+          alt={alt}
+          className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+          onLoad={handleLoad}
+          onError={handleError}
+          {...props}
+        />
+      </div>
+    );
+  };
   const [currentView, setCurrentView] = useState('welcome');
   const [profileData, setProfileData] = useState({
     name: '',
@@ -68,6 +156,7 @@ const AdminPanel = () => {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [currentPostId, setCurrentPostId] = useState(null);
   const [currentPost, setCurrentPost] = useState(null);
+  const [isReadingDraft, setIsReadingDraft] = useState(false);
 
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [selectedPosts, setSelectedPosts] = useState([]);
@@ -678,7 +767,7 @@ const AdminPanel = () => {
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline" target="_blank">$1</a>')
       .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
         const fullSrc = src.startsWith('http') || src.startsWith('blob:') ? src : `${API_BASE_URL}${src}`;
-        return `<img src="${fullSrc}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-md my-4" />`;
+        return `<img src="${fullSrc}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-md my-4" onError="this.style.display='none'" />`;
       })
 
       // Párrafos
@@ -1008,7 +1097,7 @@ const AdminPanel = () => {
                         <button
                           onClick={() => {
                             setCurrentPost(null); // Limpiar post anterior para forzar carga
-                            setIsPublicView(true);
+                            setIsReadingDraft(true);
                             setCurrentPostId(post.id);
                           }}
                           className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
@@ -2557,7 +2646,7 @@ const AdminPanel = () => {
            <div className="flex items-center space-x-6">
              <div className="relative">
                {user?.avatar ? (
-                 <img
+                 <SafeImage
                    src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:8000${user.avatar}?t=${Date.now()}`}
                    alt="Avatar"
                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
@@ -2930,7 +3019,7 @@ const AdminPanel = () => {
   };
 
   // Vista Pública del Blog
-  const PublicBlogView = ({ currentPost, setCurrentPost }) => {
+  const PublicBlogView = ({ currentPost, setCurrentPost, isReadingDraft = false }) => {
     const [publicPosts, setPublicPosts] = useState([]);
     const [publicCategories, setPublicCategories] = useState([]);
     const [publicPagination, setPublicPagination] = useState({
@@ -2946,6 +3035,7 @@ const AdminPanel = () => {
     });
     const loadingPostRef = useRef(null);
     const [isLoadingPublic, setIsLoadingPublic] = useState(false);
+    const [postLoaded, setPostLoaded] = useState(false);
 
     const loadPublicPosts = useCallback(async () => {
       setIsLoadingPublic(true);
@@ -2962,7 +3052,7 @@ const AdminPanel = () => {
       } finally {
         setIsLoadingPublic(false);
       }
-    }, [publicFilters]);
+    }, [publicFilters.page, publicFilters.limit, publicFilters.category, publicFilters.search]);
 
     const loadPublicCategories = useCallback(async () => {
       try {
@@ -2976,37 +3066,59 @@ const AdminPanel = () => {
     }, []);
 
     const loadPostById = useCallback(async (postId) => {
+      console.log('loadPostById called with postId:', postId, 'isLoadingPublic:', isLoadingPublic);
+      // Prevenir llamadas múltiples simultáneas
+      if (isLoadingPublic) return;
+
       setIsLoadingPublic(true);
       try {
+        console.log('Fetching post by ID:', postId);
         const response = await publicAPI.getPostById(postId);
+        console.log('Post response:', response);
         if (response.post) {
-          setCurrentPost(response.post);
-          // Incrementar vistas cuando se carga el artículo
-          try {
-            const viewsResponse = await publicAPI.incrementViews(postId);
-            if (viewsResponse.views) {
-              // Actualizar las vistas en currentPost para mostrar el contador actualizado
-              setCurrentPost(prev => ({ ...prev, views: viewsResponse.views }));
+          let postData = response.post;
+          console.log('Setting current post:', postData);
+          // Solo incrementar vistas si no estamos en modo lectura de borrador
+          if (!isReadingDraft) {
+            try {
+              console.log('Incrementing views for post:', postId);
+              const viewsResponse = await publicAPI.incrementViews(postId);
+              console.log('Views response:', viewsResponse);
+              if (viewsResponse.views) {
+                // Actualizar las vistas en el post
+                postData = { ...postData, views: viewsResponse.views };
+                console.log('Updated post with views:', postData);
+              }
+            } catch (error) {
+              console.error('Error incrementing views:', error);
             }
-          } catch (error) {
-            console.error('Error incrementing views:', error);
           }
+          setCurrentPost(postData);
+        } else {
+          // Post no encontrado - limpiar estado y mostrar error
+          console.log('Post not found, clearing state');
+          setCurrentPost(null);
+          setCurrentPostId(null);
+          showNotification('El artículo solicitado no existe', 'error');
         }
       } catch (error) {
         console.error('Error loading post:', error);
+        // Limpiar estado cuando hay error para evitar bucles infinitos
+        setCurrentPost(null);
+        setCurrentPostId(null);
         showNotification('Error al cargar el artículo', 'error');
       } finally {
         setIsLoadingPublic(false);
       }
-    }, []);
+    }, [isReadingDraft]);
 
     // Estado para likes
     const [userLiked, setUserLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(0);
 
-    // Cargar estado de likes cuando se carga un post
+    // Cargar estado de likes cuando se carga un post (solo en vista pública)
     useEffect(() => {
-      if (currentPost) {
+      if (currentPost && !isReadingDraft && isPublicView) {
         setLikesCount(currentPost.likes || 0);
         // Verificar si el usuario ya dio like
         publicAPI.getPostLikes(currentPost.id).then(response => {
@@ -3014,8 +3126,12 @@ const AdminPanel = () => {
         }).catch(error => {
           console.error('Error checking like status:', error);
         });
+      } else if (isReadingDraft) {
+        // En modo lectura de borrador, no cargar likes
+        setUserLiked(false);
+        setLikesCount(0);
       }
-    }, [currentPost]);
+    }, [currentPost?.id, isReadingDraft, isPublicView]);
 
     // Función para manejar likes
     const handleLikeToggle = async () => {
@@ -3039,22 +3155,30 @@ const AdminPanel = () => {
       }
     };
 
+    // Efecto para cargar post individual cuando currentPostId cambia
     useEffect(() => {
-      if (isPublicView) {
-        if (currentPost || currentPostId) {
-          // Si estamos viendo un post individual, no recargamos la lista
-          if (currentPostId && !currentPost && loadingPostRef.current !== currentPostId) {
-            loadingPostRef.current = currentPostId;
-            loadPostById(currentPostId);
-          }
-          return;
-        }
+      if ((isPublicView || isReadingDraft) && currentPostId && loadingPostRef.current !== currentPostId && (!currentPost || currentPost.id !== parseInt(currentPostId))) {
+        loadingPostRef.current = currentPostId;
+        loadPostById(currentPostId);
+      }
+    }, [currentPostId, isPublicView, isReadingDraft, currentPost]);
+
+    // Efecto para cargar lista de posts cuando estamos en vista pública sin post específico
+    useEffect(() => {
+      if (isPublicView && !currentPostId && !currentPost) {
         loadPublicPosts();
         loadPublicCategories();
-      } else {
-        loadingPostRef.current = null;
       }
-    }, [isPublicView, loadPublicPosts, loadPublicCategories, currentPostId]);
+    }, [isPublicView, currentPostId, currentPost, publicFilters.page, publicFilters.limit, publicFilters.category, publicFilters.search]);
+
+    // Limpiar loadingPostRef cuando salimos de vista pública o lectura de borrador
+    useEffect(() => {
+      if (!isPublicView && !isReadingDraft) {
+        loadingPostRef.current = null;
+        // Limpiar imágenes fallidas cuando salimos de las vistas
+        localStorage.removeItem('failed_images');
+      }
+    }, [isPublicView, isReadingDraft]);
 
     const handlePublicFilterChange = (filterType, value) => {
       setPublicFilters(prev => ({ ...prev, [filterType]: value, page: 1 }));
@@ -3078,6 +3202,13 @@ const AdminPanel = () => {
       setPublicPagination(prev => ({ ...prev, page: 1 }));
     };
 
+    // Memoizar callback para recargar comentarios
+    const reloadComments = useCallback(() => {
+      if (currentPost?.id) {
+        loadPostById(currentPost.id);
+      }
+    }, [currentPost?.id, loadPostById]);
+
     // Componente para el formulario de comentarios
     const CommentForm = ({ postId, onCommentAdded }) => {
       const [commentData, setCommentData] = useState({
@@ -3087,7 +3218,7 @@ const AdminPanel = () => {
       });
       const [isSubmitting, setIsSubmitting] = useState(false);
 
-      const handleSubmit = async (e) => {
+      const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
@@ -3107,7 +3238,7 @@ const AdminPanel = () => {
         } finally {
           setIsSubmitting(false);
         }
-      };
+      }, [postId, commentData, onCommentAdded]);
 
       return (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -3170,19 +3301,24 @@ const AdminPanel = () => {
       );
     };
 
-    if (currentPost) {
-      // Vista de artículo individual
+    if (currentPost || isReadingDraft) {
+      // Vista de artículo individual (o lectura de borrador)
       return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
             <div className="max-w-4xl mx-auto px-6 py-4">
               <div className="flex items-center justify-between mb-4">
                 <button
-                  onClick={backToBlog}
+                  onClick={isReadingDraft ? () => {
+                    setIsReadingDraft(false);
+                    setCurrentPost(null);
+                    setCurrentPostId(null);
+                    setCurrentView('posts');
+                  } : backToBlog}
                   className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Volver al blog
+                  {isReadingDraft ? 'Volver al panel' : 'Volver al blog'}
                 </button>
                 <div className="flex items-center gap-2">
                   {/* Botón del tema */}
@@ -3201,17 +3337,19 @@ const AdminPanel = () => {
                       <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                     )}
                   </button>
-                  <button
-                    onClick={() => {
-                      setIsPublicView(false);
-                      setCurrentPost(null);
-                      setCurrentPostId(null);
-                      setCurrentView('dashboard');
-                    }}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 dark:from-blue-600 dark:to-purple-700"
-                  >
-                    Panel Admin
-                  </button>
+                  {!isReadingDraft && (
+                    <button
+                      onClick={() => {
+                        setIsPublicView(false);
+                        setCurrentPost(null);
+                        setCurrentPostId(null);
+                        setCurrentView('dashboard');
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 dark:from-blue-600 dark:to-purple-700"
+                    >
+                      Panel Admin
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
@@ -3243,8 +3381,8 @@ const AdminPanel = () => {
                 <div className="flex items-center">
                   <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3" />
                   <div>
-                    <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Artículo en borrador</h3>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">Este artículo no está publicado y solo es visible para administradores.</p>
+                    <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Esto es un borrador</h3>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">Solo lo pueden ver los administradores.</p>
                   </div>
                 </div>
               </div>
@@ -3252,20 +3390,19 @@ const AdminPanel = () => {
 
             <article className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
               {currentPost.featured_image && (
-                <img
+                <SafeImage
                   src={currentPost.featured_image.startsWith('http') ? currentPost.featured_image : `${API_BASE_URL}${currentPost.featured_image}`}
                   alt={currentPost.title}
                   className="w-full h-64 object-cover"
-                  // onLoad={() => console.log('Imagen cargada en post individual:', currentPost.featured_image)}
-                  // onError={(e) => console.log('Error cargando imagen en post individual:', currentPost.featured_image, e)}
+                  style={{ display: 'block' }} // Forzar display block para imágenes destacadas
                 />
               )}
-  
+
               <div className="p-8">
                 <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
                   {currentPost.title}
                 </h1>
-  
+
                 <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-8">
                   <span className="flex items-center gap-2">
                     <User className="w-4 h-4" />
@@ -3275,18 +3412,20 @@ const AdminPanel = () => {
                     <Eye className="w-4 h-4" />
                     {currentPost.views || 0} vistas
                   </span>
-                  <button
-                    onClick={handleLikeToggle}
-                    className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${
-                      userLiked
-                        ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    title={userLiked ? 'Quitar like' : 'Dar like'}
-                  >
-                    <Heart className={`w-4 h-4 ${userLiked ? 'fill-current' : ''}`} />
-                    {likesCount} likes
-                  </button>
+                  {!isReadingDraft && (
+                    <button
+                      onClick={handleLikeToggle}
+                      className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${
+                        userLiked
+                          ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                      title={userLiked ? 'Quitar like' : 'Dar like'}
+                    >
+                      <Heart className={`w-4 h-4 ${userLiked ? 'fill-current' : ''}`} />
+                      {likesCount} likes
+                    </button>
+                  )}
                   <span className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
                     {currentPost.comments_count} comentarios
@@ -3294,33 +3433,18 @@ const AdminPanel = () => {
                 </div>
 
                 <div className="prose prose-lg max-w-none dark:prose-invert">
-                  {currentPost.content.split('\n').map((paragraph, index) => {
+                  {currentPost.content && currentPost.content.split('\n').map((paragraph, index) => {
                     if (paragraph.trim() === '') return null;
 
-                    // Convertir Markdown básico a HTML
-                    let html = paragraph
-                      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-semibold mt-8 mb-4 text-gray-900 dark:text-white">$1</h3>')
-                      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-10 mb-6 text-gray-900 dark:text-white">$1</h2>')
-                      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-12 mb-8 text-gray-900 dark:text-white">$1</h1>')
-                      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-                      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
-                      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">$1</code>')
-                      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
-                        const fullSrc = src.startsWith('http') || src.startsWith('blob:') ? src : `${API_BASE_URL}${src}`;
-                        return `<img src="${fullSrc}" alt="${alt}" class="max-w-full h-auto rounded-lg shadow-md my-4" />`;
-                      })
-                      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline">$1</a>')
-                      .replace(/^- (.*$)/gm, '<li class="ml-6 mb-1 text-gray-700 dark:text-gray-300">• $1</li>')
-                      .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-6 mb-1 text-gray-700 dark:text-gray-300">$1. $2</li>');
-
-                    return <p key={index} className="mb-4 leading-relaxed text-gray-800 dark:text-gray-200" dangerouslySetInnerHTML={{ __html: html }} />;
+                    // Procesar párrafo con imágenes seguras
+                    return <MarkdownParagraph key={index} content={paragraph} />;
                   })}
                 </div>
               </div>
             </article>
 
-            {/* Comentarios */}
-            {currentPost.comments && currentPost.comments.length > 0 && (
+            {/* Comentarios - Solo mostrar en vista pública */}
+            {!isReadingDraft && currentPost.comments && currentPost.comments.length > 0 && (
               <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
                 <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Comentarios ({currentPost.comments_count})</h3>
                 <div className="space-y-6">
@@ -3351,11 +3475,13 @@ const AdminPanel = () => {
               </div>
             )}
 
-            {/* Formulario para agregar comentario */}
-            <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-              <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Deja tu comentario</h3>
-              <CommentForm postId={currentPost.id} onCommentAdded={() => loadPostById(currentPost.id)} />
-            </div>
+            {/* Formulario para agregar comentario - Solo en vista pública */}
+            {!isReadingDraft && (
+              <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Deja tu comentario</h3>
+                <CommentForm postId={currentPost.id} onCommentAdded={reloadComments} />
+              </div>
+            )}
           </main>
         </div>
       );
@@ -3445,12 +3571,10 @@ const AdminPanel = () => {
                   onClick={() => viewPost(post.id)}
                 >
                   {post.featured_image && (
-                    <img
+                    <SafeImage
                       src={post.featured_image.startsWith('http') ? post.featured_image : `${API_BASE_URL}${post.featured_image}`}
                       alt={post.title}
                       className="w-full h-48 object-cover"
-                      // onLoad={() => console.log('Imagen cargada en lista:', post.featured_image)}
-                      // onError={(e) => console.log('Error cargando imagen en lista:', post.featured_image, e)}
                     />
                   )}
 
@@ -3573,7 +3697,11 @@ const AdminPanel = () => {
   }
 
   if (isPublicView) {
-    return <PublicBlogView currentPost={currentPost} setCurrentPost={setCurrentPost} />;
+    return <PublicBlogView currentPost={currentPost} setCurrentPost={setCurrentPost} isReadingDraft={false} />;
+  }
+
+  if (isReadingDraft) {
+    return <PublicBlogView currentPost={currentPost} setCurrentPost={setCurrentPost} isReadingDraft={true} />;
   }
 
   return (
@@ -3619,7 +3747,7 @@ const AdminPanel = () => {
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
                   {user?.avatar ? (
-                    <img
+                    <SafeImage
                       src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:8000${user.avatar}?t=${Date.now()}`}
                       alt="Avatar"
                       className="w-full h-full object-cover"

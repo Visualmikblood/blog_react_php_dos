@@ -19,7 +19,8 @@ error_log("Router: URI=$request_uri, METHOD=$request_method");
 
 // Verificar si la petición es para /uploads/
 if (strpos($request_uri, '/uploads/') === 0) {
-    $file_path = __DIR__ . $request_uri;
+    // Los archivos se guardan en api/uploads/, pero se sirven desde /uploads/
+    $file_path = __DIR__ . '/api' . $request_uri;
 
     // Verificar que el archivo existe
     if (file_exists($file_path)) {
@@ -38,9 +39,11 @@ if (strpos($request_uri, '/uploads/') === 0) {
         }
     }
 
-    // Si no es una imagen válida, devolver 404
-    http_response_code(404);
-    echo "Archivo no encontrado";
+    // Si no es una imagen válida, devolver una imagen placeholder transparente de 1x1 pixel
+    header('Content-Type: image/png');
+    header('Cache-Control: public, max-age=31536000');
+    // Imagen PNG de 1x1 pixel transparente en base64
+    echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
     exit();
 }
 

@@ -16,7 +16,7 @@ if ($request_method === 'OPTIONS') {
 
 // Verificar si la petición es para /uploads/
 if (strpos($request_uri, '/uploads/') === 0) {
-    $file_path = __DIR__ . $request_uri;
+    $file_path = __DIR__ . '/api' . $request_uri;
 
     // Verificar que el archivo existe
     if (file_exists($file_path)) {

@@ -105,7 +105,7 @@ function handleLikePost($db, $post_id) {
 
     // Obtener token de autenticación si existe
     $user_id = null;
-    $headers = apache_request_headers();
+    $headers = getallheaders();
     if (isset($headers['Authorization'])) {
         $token = str_replace('Bearer ', '', $headers['Authorization']);
         try {
@@ -169,7 +169,7 @@ function handleLikePost($db, $post_id) {
 function handleUnlikePost($db, $post_id) {
     // Obtener token de autenticación si existe
     $user_id = null;
-    $headers = apache_request_headers();
+    $headers = getallheaders();
     if (isset($headers['Authorization'])) {
         $token = str_replace('Bearer ', '', $headers['Authorization']);
         try {
@@ -219,7 +219,7 @@ function handleUnlikePost($db, $post_id) {
 function handleGetPostLikes($db, $post_id) {
     // Obtener token de autenticación si existe
     $user_id = null;
-    $headers = apache_request_headers();
+    $headers = getallheaders();
     if (isset($headers['Authorization'])) {
         $token = str_replace('Bearer ', '', $headers['Authorization']);
         try {
@@ -343,21 +343,49 @@ function handleGetPosts($db) {
 }
 
 function handleGetPostById($db, $post_id) {
+    // Verificar si el usuario está autenticado
+    $user_id = null;
+    $headers = getallheaders();
+    if (isset($headers['Authorization'])) {
+        $token = str_replace('Bearer ', '', $headers['Authorization']);
+        try {
+            $tokenData = json_decode(base64_decode($token), true);
+            if ($tokenData && isset($tokenData['exp']) && $tokenData['exp'] > time()) {
+                $user_id = $tokenData['user_id'];
+            }
+        } catch (Exception $e) {
+            // Token inválido, continuar sin usuario autenticado
+        }
+    }
+
+    // Construir la consulta condicionalmente
+    $where_condition = "p.id = :id";
+    if (!$user_id) {
+        // Usuario no autenticado: solo posts publicados
+        $where_condition .= " AND p.status = 'published'";
+    } else {
+        // Usuario autenticado: posts publicados O posts en draft del usuario
+        $where_condition .= " AND (p.status = 'published' OR (p.status = 'draft' AND p.author_id = :user_id))";
+    }
+
     $query = "SELECT p.*, c.name as category_name, c.slug as category_slug,
-                     u.name as author_name, u.email as author_email,
-                     GROUP_CONCAT(t.name) as tags,
-                     COUNT(co.id) as comments_count
-              FROM posts p
-              LEFT JOIN categories c ON p.category_id = c.id
-              LEFT JOIN users u ON p.author_id = u.id
-              LEFT JOIN post_tags pt ON p.id = pt.post_id
-              LEFT JOIN tags t ON pt.tag_id = t.id
-              LEFT JOIN comments co ON p.id = co.post_id AND co.status = 'approved'
-              WHERE p.id = :id AND p.status = 'published'
-              GROUP BY p.id";
+                      u.name as author_name, u.email as author_email,
+                      GROUP_CONCAT(t.name) as tags,
+                      COUNT(co.id) as comments_count
+               FROM posts p
+               LEFT JOIN categories c ON p.category_id = c.id
+               LEFT JOIN users u ON p.author_id = u.id
+               LEFT JOIN post_tags pt ON p.id = pt.post_id
+               LEFT JOIN tags t ON pt.tag_id = t.id
+               LEFT JOIN comments co ON p.id = co.post_id AND co.status = 'approved'
+               WHERE $where_condition
+               GROUP BY p.id";
 
     $stmt = $db->prepare($query);
     $stmt->bindParam(':id', $post_id);
+    if ($user_id) {
+        $stmt->bindParam(':user_id', $user_id);
+    }
     $stmt->execute();
 
     if ($stmt->rowCount() === 0) {
@@ -485,7 +513,7 @@ function handleCreateComment($db, $post_id) {
     $author_name = isset($data->author_name) ? Helpers::sanitizeInput($data->author_name) : null;
     $author_email = isset($data->author_email) ? Helpers::sanitizeInput($data->author_email) : null;
 
-    $headers = apache_request_headers();
+    $headers = getallheaders();
     if (isset($headers['Authorization'])) {
         $token = str_replace('Bearer ', '', $headers['Authorization']);
         try {
