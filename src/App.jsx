@@ -650,6 +650,32 @@ const AdminPanel = () => {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users/manage.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ action: 'delete', id: userId })
+      });
+      if (!response.ok) {
+        throw new Error(`Error deleting user ${userId}`);
+      }
+      showNotification('Usuario eliminado exitosamente');
+      // Aquí debería recargar la lista de usuarios
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      showNotification('Error al eliminar usuario', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Funciones para selección múltiple de comentarios
   const handleSelectComment = (commentId) => {
     setSelectedComments(prev =>

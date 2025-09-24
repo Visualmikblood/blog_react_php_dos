@@ -502,16 +502,11 @@ export const usersAPI = {
   },
 
   delete: (userId) => {
-    const formData = new FormData();
-    formData.append('action', 'delete');
-    formData.append('id', userId);
-
-    return fetch(`${API_BASE_URL}/admin/users/manage.php`, {
-      method: 'POST',
+    return fetch(`${API_BASE_URL}/admin/users/manage.php?id=${userId}`, {
+      method: 'DELETE',
       headers: {
         'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
-      },
-      body: formData
+      }
     }).then(response => {
       if (!response.ok) {
         return response.json().then(errorData => {

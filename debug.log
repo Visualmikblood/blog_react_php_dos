@@ -298,3 +298,9 @@
 2025-09-24 17:06:45 upload.php - newFileName: img_68d40905141b94.71627337.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40905141b94.71627337.jpg
 2025-09-24 17:06:45 upload.php - content length: 400954
 2025-09-24 17:06:45 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40905141b94.71627337.jpg
+2025-09-24 17:21:54 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:21:54 upload.php - FILES: {"image":{"name":"para_vaga_2.jpg","full_path":"para_vaga_2.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php303F.tmp","error":0,"size":208770}}
+2025-09-24 17:21:54 upload.php - fileName: para_vaga_2.jpg, fileSize: 208770, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php303F.tmp
+2025-09-24 17:21:54 upload.php - newFileName: img_68d40c92459a70.20448665.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40c92459a70.20448665.jpg
+2025-09-24 17:21:54 upload.php - content length: 208770
+2025-09-24 17:21:54 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40c92459a70.20448665.jpg
