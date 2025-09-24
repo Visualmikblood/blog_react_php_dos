@@ -3363,6 +3363,18 @@ const AdminPanel = () => {
 
     if (currentPost || isReadingDraft) {
       // Vista de artículo individual (o lectura de borrador)
+      if (!currentPost) {
+        // Mostrar loading mientras se carga el post
+        return (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+              <p className="text-gray-600">Cargando artículo...</p>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">

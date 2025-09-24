@@ -370,3 +370,9 @@
 2025-09-24 17:31:54 upload.php - newFileName: img_68d40eea23d375.80679525.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40eea23d375.80679525.png
 2025-09-24 17:31:54 upload.php - content length: 4366651
 2025-09-24 17:31:54 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40eea23d375.80679525.png
+2025-09-24 17:34:55 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:34:55 upload.php - FILES: {"image":{"name":"enviar a dondominbio.png","full_path":"enviar a dondominbio.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php1B13.tmp","error":0,"size":172902}}
+2025-09-24 17:34:55 upload.php - fileName: enviar a dondominbio.png, fileSize: 172902, fileType: image/png, fileTmpName: C:\xampp\tmp\php1B13.tmp
+2025-09-24 17:34:55 upload.php - newFileName: img_68d40f9f482146.55264766.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40f9f482146.55264766.png
+2025-09-24 17:34:55 upload.php - content length: 172902
+2025-09-24 17:34:55 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40f9f482146.55264766.png
