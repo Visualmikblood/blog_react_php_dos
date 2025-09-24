@@ -97,6 +97,15 @@ const AdminPanel = () => {
 
     const [isLoading, setIsLoading] = useState(true);
 
+    // Resetear estado cuando cambia el src
+    useEffect(() => {
+      setImageError(() => {
+        const failedImages = JSON.parse(localStorage.getItem('failed_images') || '[]');
+        return failedImages.includes(src);
+      });
+      setIsLoading(true);
+    }, [src]);
+
     const handleLoad = () => {
       setIsLoading(false);
     };
@@ -153,7 +162,12 @@ const AdminPanel = () => {
   const [notification, setNotification] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [currentAvatar, setCurrentAvatar] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
+
+  useEffect(() => {
+    setCurrentAvatar(user?.avatar);
+  }, [user?.avatar]);
   const [currentPostId, setCurrentPostId] = useState(null);
   const [currentPost, setCurrentPost] = useState(null);
   const [isReadingDraft, setIsReadingDraft] = useState(false);
@@ -2613,12 +2627,11 @@ const AdminPanel = () => {
       }
     }, [user]); // Dependencia en user para sincronizar cambios
 
-    const handleUpdateProfile = async (e) => {
-      e.preventDefault();
+    const updateProfile = async (profileData) => {
       setIsLoading(true);
-  
+
       try {
-        const response = await usersAPI.updateProfile(localProfileData);
+        const response = await usersAPI.updateProfile(profileData);
         if (response.user) {
           setUser(response.user);
           showNotification('Perfil actualizado exitosamente');
@@ -2631,6 +2644,11 @@ const AdminPanel = () => {
       } finally {
         setIsLoading(false);
       }
+    };
+
+    const handleUpdateProfile = async (e) => {
+      e.preventDefault();
+      await updateProfile(localProfileData);
     };
 
     const handleAvatarUpload = async (e) => {
@@ -2658,9 +2676,11 @@ const AdminPanel = () => {
         if (response.image_url) {
           // Actualizar tanto el estado local como el global
           setLocalProfileData(prev => ({ ...prev, avatar: response.image_url }));
-          // También actualizar el user global para que se refleje inmediatamente
-          setUser(prev => prev ? { ...prev, avatar: response.image_url } : null);
-          showNotification('Imagen subida exitosamente');
+          // Actualizar el avatar en el header inmediatamente
+          setCurrentAvatar(response.image_url);
+
+          // Guardar automáticamente el perfil con la nueva imagen
+          await updateProfile({ ...localProfileData, avatar: response.image_url });
         }
       } catch (error) {
         console.error('Error uploading avatar:', error);
@@ -2685,9 +2705,9 @@ const AdminPanel = () => {
            {/* Avatar */}
            <div className="flex items-center space-x-6">
              <div className="relative">
-               {user?.avatar ? (
+               {currentAvatar ? (
                  <SafeImage
-                   src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:8000${user.avatar}?t=${Date.now()}`}
+                   src={currentAvatar.startsWith('http') ? currentAvatar : `http://localhost:8000${currentAvatar}`}
                    alt="Avatar"
                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
                  />
@@ -3786,9 +3806,10 @@ const AdminPanel = () => {
               </button>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
-                  {user?.avatar ? (
+                  {currentAvatar ? (
                     <SafeImage
-                      src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:8000${user.avatar}?t=${Date.now()}`}
+                      key={`avatar-${currentAvatar}`}
+                      src={currentAvatar.startsWith('http') ? currentAvatar : `http://localhost:8000${currentAvatar}`}
                       alt="Avatar"
                       className="w-full h-full object-cover"
                     />

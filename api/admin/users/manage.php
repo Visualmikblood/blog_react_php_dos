@@ -255,7 +255,7 @@ function handleUpdateProfile($db) {
     }
 
     // Obtener el ID del usuario del token
-    $headers = apache_request_headers();
+    $headers = getallheaders();
     $token = str_replace('Bearer ', '', $headers['Authorization']);
     $tokenData = json_decode(base64_decode($token), true);
     $userId = $tokenData['user_id'];

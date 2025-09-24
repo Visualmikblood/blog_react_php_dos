@@ -304,3 +304,69 @@
 2025-09-24 17:21:54 upload.php - newFileName: img_68d40c92459a70.20448665.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40c92459a70.20448665.jpg
 2025-09-24 17:21:54 upload.php - content length: 208770
 2025-09-24 17:21:54 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40c92459a70.20448665.jpg
+2025-09-24 17:24:02 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:24:02 upload.php - FILES: {"image":{"name":"artes_marciales.png","full_path":"artes_marciales.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php24CD.tmp","error":0,"size":66291}}
+2025-09-24 17:24:02 upload.php - fileName: artes_marciales.png, fileSize: 66291, fileType: image/png, fileTmpName: C:\xampp\tmp\php24CD.tmp
+2025-09-24 17:24:02 upload.php - newFileName: img_68d40d1265cef3.23585108.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40d1265cef3.23585108.png
+2025-09-24 17:24:02 upload.php - content length: 66291
+2025-09-24 17:24:02 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40d1265cef3.23585108.png
+2025-09-24 17:24:23 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:24:23 upload.php - FILES: {"image":{"name":"tertertertertertert.png","full_path":"tertertertertertert.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php76A7.tmp","error":0,"size":4366651}}
+2025-09-24 17:24:23 upload.php - fileName: tertertertertertert.png, fileSize: 4366651, fileType: image/png, fileTmpName: C:\xampp\tmp\php76A7.tmp
+2025-09-24 17:24:23 upload.php - newFileName: img_68d40d2764afc8.32378661.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40d2764afc8.32378661.png
+2025-09-24 17:24:23 upload.php - content length: 4366651
+2025-09-24 17:24:23 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40d2764afc8.32378661.png
+2025-09-24 17:25:43 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:25:43 upload.php - FILES: {"image":{"name":"logo_lays_para_3d.png","full_path":"logo_lays_para_3d.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\phpAE0F.tmp","error":0,"size":53182}}
+2025-09-24 17:25:43 upload.php - fileName: logo_lays_para_3d.png, fileSize: 53182, fileType: image/png, fileTmpName: C:\xampp\tmp\phpAE0F.tmp
+2025-09-24 17:25:43 upload.php - newFileName: img_68d40d7714c8c2.70406806.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40d7714c8c2.70406806.png
+2025-09-24 17:25:43 upload.php - content length: 53182
+2025-09-24 17:25:43 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40d7714c8c2.70406806.png
+2025-09-24 17:26:19 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:26:19 upload.php - FILES: {"image":{"name":"artes_marciales.png","full_path":"artes_marciales.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php3B0D.tmp","error":0,"size":66291}}
+2025-09-24 17:26:19 upload.php - fileName: artes_marciales.png, fileSize: 66291, fileType: image/png, fileTmpName: C:\xampp\tmp\php3B0D.tmp
+2025-09-24 17:26:19 upload.php - newFileName: img_68d40d9b2ddeb9.14019355.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40d9b2ddeb9.14019355.png
+2025-09-24 17:26:19 upload.php - content length: 66291
+2025-09-24 17:26:19 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40d9b2ddeb9.14019355.png
+2025-09-24 17:26:33 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:26:33 upload.php - FILES: {"image":{"name":"playa.jpg","full_path":"playa.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php7299.tmp","error":0,"size":765337}}
+2025-09-24 17:26:33 upload.php - fileName: playa.jpg, fileSize: 765337, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php7299.tmp
+2025-09-24 17:26:33 upload.php - newFileName: img_68d40da961d017.16736983.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40da961d017.16736983.jpg
+2025-09-24 17:26:33 upload.php - content length: 765337
+2025-09-24 17:26:33 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40da961d017.16736983.jpg
+2025-09-24 17:26:41 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:26:41 upload.php - FILES: {"image":{"name":"fer_para_veo_2_prompt.jpg","full_path":"fer_para_veo_2_prompt.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php911F.tmp","error":0,"size":489396}}
+2025-09-24 17:26:41 upload.php - fileName: fer_para_veo_2_prompt.jpg, fileSize: 489396, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php911F.tmp
+2025-09-24 17:26:41 upload.php - newFileName: img_68d40db136d762.22430968.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40db136d762.22430968.jpg
+2025-09-24 17:26:41 upload.php - content length: 489396
+2025-09-24 17:26:41 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40db136d762.22430968.jpg
+2025-09-24 17:26:51 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:26:51 upload.php - FILES: {"image":{"name":"yfhrg.jpg","full_path":"yfhrg.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\phpBAB0.tmp","error":0,"size":400954}}
+2025-09-24 17:26:51 upload.php - fileName: yfhrg.jpg, fileSize: 400954, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\phpBAB0.tmp
+2025-09-24 17:26:51 upload.php - newFileName: img_68d40dbbcfeba4.31537554.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40dbbcfeba4.31537554.jpg
+2025-09-24 17:26:51 upload.php - content length: 400954
+2025-09-24 17:26:51 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40dbbcfeba4.31537554.jpg
+2025-09-24 17:27:24 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:27:24 upload.php - FILES: {"image":{"name":"yfhrg.jpg","full_path":"yfhrg.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php3919.tmp","error":0,"size":400954}}
+2025-09-24 17:27:24 upload.php - fileName: yfhrg.jpg, fileSize: 400954, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php3919.tmp
+2025-09-24 17:27:24 upload.php - newFileName: img_68d40ddc362103.85430164.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40ddc362103.85430164.jpg
+2025-09-24 17:27:24 upload.php - content length: 400954
+2025-09-24 17:27:24 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40ddc362103.85430164.jpg
+2025-09-24 17:27:43 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:27:43 upload.php - FILES: {"image":{"name":"instagram_miguel_photoshop.jpg","full_path":"instagram_miguel_photoshop.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php846B.tmp","error":0,"size":263948}}
+2025-09-24 17:27:43 upload.php - fileName: instagram_miguel_photoshop.jpg, fileSize: 263948, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php846B.tmp
+2025-09-24 17:27:43 upload.php - newFileName: img_68d40def79ff28.81091175.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40def79ff28.81091175.jpg
+2025-09-24 17:27:43 upload.php - content length: 263948
+2025-09-24 17:27:43 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40def79ff28.81091175.jpg
+2025-09-24 17:29:39 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:29:39 upload.php - FILES: {"image":{"name":"sergio.jpg","full_path":"sergio.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php496D.tmp","error":0,"size":871603}}
+2025-09-24 17:29:39 upload.php - fileName: sergio.jpg, fileSize: 871603, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php496D.tmp
+2025-09-24 17:29:39 upload.php - newFileName: img_68d40e6372f2c5.73749887.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40e6372f2c5.73749887.jpg
+2025-09-24 17:29:39 upload.php - content length: 871603
+2025-09-24 17:29:39 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40e6372f2c5.73749887.jpg
+2025-09-24 17:31:54 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:31:54 upload.php - FILES: {"image":{"name":"tertertertertertert.png","full_path":"tertertertertertert.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php575E.tmp","error":0,"size":4366651}}
+2025-09-24 17:31:54 upload.php - fileName: tertertertertertert.png, fileSize: 4366651, fileType: image/png, fileTmpName: C:\xampp\tmp\php575E.tmp
+2025-09-24 17:31:54 upload.php - newFileName: img_68d40eea23d375.80679525.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40eea23d375.80679525.png
+2025-09-24 17:31:54 upload.php - content length: 4366651
+2025-09-24 17:31:54 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40eea23d375.80679525.png
