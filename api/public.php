@@ -343,8 +343,9 @@ function handleGetPosts($db) {
 }
 
 function handleGetPostById($db, $post_id) {
-    // Verificar si el usuario está autenticado
+    // Verificar si el usuario está autenticado y obtener su rol
     $user_id = null;
+    $user_role = null;
     $headers = getallheaders();
     if (isset($headers['Authorization'])) {
         $token = str_replace('Bearer ', '', $headers['Authorization']);
@@ -352,6 +353,7 @@ function handleGetPostById($db, $post_id) {
             $tokenData = json_decode(base64_decode($token), true);
             if ($tokenData && isset($tokenData['exp']) && $tokenData['exp'] > time()) {
                 $user_id = $tokenData['user_id'];
+                $user_role = $tokenData['role'] ?? null;
             }
         } catch (Exception $e) {
             // Token inválido, continuar sin usuario autenticado
@@ -363,8 +365,11 @@ function handleGetPostById($db, $post_id) {
     if (!$user_id) {
         // Usuario no autenticado: solo posts publicados
         $where_condition .= " AND p.status = 'published'";
+    } elseif ($user_role === 'admin') {
+        // Admin: acceso a todos los posts (publicados y drafts)
+        // No agregar condición adicional
     } else {
-        // Usuario autenticado: posts publicados O posts en draft del usuario
+        // Usuario autenticado normal: posts publicados O posts en draft del usuario
         $where_condition .= " AND (p.status = 'published' OR (p.status = 'draft' AND p.author_id = :user_id))";
     }
 
@@ -383,7 +388,7 @@ function handleGetPostById($db, $post_id) {
 
     $stmt = $db->prepare($query);
     $stmt->bindParam(':id', $post_id);
-    if ($user_id) {
+    if ($user_id && $user_role !== 'admin') {
         $stmt->bindParam(':user_id', $user_id);
     }
     $stmt->execute();

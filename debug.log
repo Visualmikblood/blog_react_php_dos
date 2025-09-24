@@ -376,3 +376,69 @@
 2025-09-24 17:34:55 upload.php - newFileName: img_68d40f9f482146.55264766.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40f9f482146.55264766.png
 2025-09-24 17:34:55 upload.php - content length: 172902
 2025-09-24 17:34:55 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40f9f482146.55264766.png
+2025-09-24 17:36:45 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:36:45 upload.php - FILES: {"image":{"name":"plugins_que_hay_que _volver_a_poner.png","full_path":"plugins_que_hay_que _volver_a_poner.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\phpC886.tmp","error":0,"size":252253}}
+2025-09-24 17:36:45 upload.php - fileName: plugins_que_hay_que _volver_a_poner.png, fileSize: 252253, fileType: image/png, fileTmpName: C:\xampp\tmp\phpC886.tmp
+2025-09-24 17:36:45 upload.php - newFileName: img_68d4100d3644c5.45986414.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d4100d3644c5.45986414.png
+2025-09-24 17:36:45 upload.php - content length: 252253
+2025-09-24 17:36:45 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d4100d3644c5.45986414.png
+2025-09-24 17:37:16 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:37:16 upload.php - FILES: {"image":{"name":"Virtualthreads.png","full_path":"Virtualthreads.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php43B2.tmp","error":0,"size":1563252}}
+2025-09-24 17:37:16 upload.php - fileName: Virtualthreads.png, fileSize: 1563252, fileType: image/png, fileTmpName: C:\xampp\tmp\php43B2.tmp
+2025-09-24 17:37:16 upload.php - newFileName: img_68d4102cb8b9f5.34917229.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d4102cb8b9f5.34917229.png
+2025-09-24 17:37:16 upload.php - content length: 1563252
+2025-09-24 17:37:16 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d4102cb8b9f5.34917229.png
+2025-09-24 17:41:44 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:41:44 upload.php - FILES: {"image":{"name":"tertertertertertert.png","full_path":"tertertertertertert.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php595A.tmp","error":0,"size":4366651}}
+2025-09-24 17:41:44 upload.php - fileName: tertertertertertert.png, fileSize: 4366651, fileType: image/png, fileTmpName: C:\xampp\tmp\php595A.tmp
+2025-09-24 17:41:44 upload.php - newFileName: img_68d41138745478.06182937.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d41138745478.06182937.png
+2025-09-24 17:41:44 upload.php - content length: 4366651
+2025-09-24 17:41:44 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d41138745478.06182937.png
+2025-09-24 17:42:19 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:42:19 upload.php - FILES: {"image":{"name":"consulata_ copia.jpg","full_path":"consulata_ copia.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\phpE06D.tmp","error":0,"size":1382023}}
+2025-09-24 17:42:19 upload.php - fileName: consulata_ copia.jpg, fileSize: 1382023, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\phpE06D.tmp
+2025-09-24 17:42:19 upload.php - newFileName: img_68d4115b04fa49.38899869.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d4115b04fa49.38899869.jpg
+2025-09-24 17:42:19 upload.php - content length: 1382023
+2025-09-24 17:42:19 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d4115b04fa49.38899869.jpg
+2025-09-24 17:43:43 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:43:43 upload.php - FILES: {"image":{"name":"malwarebytes.jpg","full_path":"malwarebytes.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php29E6.tmp","error":0,"size":106405}}
+2025-09-24 17:43:43 upload.php - fileName: malwarebytes.jpg, fileSize: 106405, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php29E6.tmp
+2025-09-24 17:43:43 upload.php - newFileName: img_68d411af565aa5.33954361.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d411af565aa5.33954361.jpg
+2025-09-24 17:43:43 upload.php - content length: 106405
+2025-09-24 17:43:43 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d411af565aa5.33954361.jpg
+2025-09-24 17:45:06 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:45:06 upload.php - FILES: {"image":{"name":"logo_chicago.webp","full_path":"logo_chicago.webp","type":"image\/webp","tmp_name":"C:\\xampp\\tmp\\php6D54.tmp","error":0,"size":550032}}
+2025-09-24 17:45:06 upload.php - fileName: logo_chicago.webp, fileSize: 550032, fileType: image/webp, fileTmpName: C:\xampp\tmp\php6D54.tmp
+2025-09-24 17:45:06 upload.php - newFileName: img_68d41202264581.67926905.webp, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d41202264581.67926905.webp
+2025-09-24 17:45:06 upload.php - content length: 550032
+2025-09-24 17:45:06 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d41202264581.67926905.webp
+2025-09-24 17:48:12 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:48:12 upload.php - FILES: {"image":{"name":"sergio.jpg","full_path":"sergio.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php45C9.tmp","error":0,"size":871603}}
+2025-09-24 17:48:12 upload.php - fileName: sergio.jpg, fileSize: 871603, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php45C9.tmp
+2025-09-24 17:48:12 upload.php - newFileName: img_68d412bc9db9b5.81236524.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d412bc9db9b5.81236524.jpg
+2025-09-24 17:48:12 upload.php - content length: 871603
+2025-09-24 17:48:12 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d412bc9db9b5.81236524.jpg
+2025-09-24 17:49:05 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:49:05 upload.php - FILES: {"image":{"name":"auriculares_rotos_jbl_2024.jpg","full_path":"auriculares_rotos_jbl_2024.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php13AA.tmp","error":0,"size":1358246}}
+2025-09-24 17:49:05 upload.php - fileName: auriculares_rotos_jbl_2024.jpg, fileSize: 1358246, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php13AA.tmp
+2025-09-24 17:49:05 upload.php - newFileName: img_68d412f15660e8.84270401.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d412f15660e8.84270401.jpg
+2025-09-24 17:49:05 upload.php - content length: 1358246
+2025-09-24 17:49:05 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d412f15660e8.84270401.jpg
+2025-09-24 17:53:00 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:53:00 upload.php - FILES: {"image":{"name":"playa.jpg","full_path":"playa.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\phpABA6.tmp","error":0,"size":765337}}
+2025-09-24 17:53:00 upload.php - fileName: playa.jpg, fileSize: 765337, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\phpABA6.tmp
+2025-09-24 17:53:00 upload.php - newFileName: img_68d413dcd30970.44425808.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d413dcd30970.44425808.jpg
+2025-09-24 17:53:00 upload.php - content length: 765337
+2025-09-24 17:53:00 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d413dcd30970.44425808.jpg
+2025-09-24 17:53:09 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:53:09 upload.php - FILES: {"image":{"name":"tertertertertertert.png","full_path":"tertertertertertert.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\phpCEB0.tmp","error":0,"size":4366651}}
+2025-09-24 17:53:09 upload.php - fileName: tertertertertertert.png, fileSize: 4366651, fileType: image/png, fileTmpName: C:\xampp\tmp\phpCEB0.tmp
+2025-09-24 17:53:09 upload.php - newFileName: img_68d413e5d1c244.97777487.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d413e5d1c244.97777487.png
+2025-09-24 17:53:09 upload.php - content length: 4366651
+2025-09-24 17:53:09 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d413e5d1c244.97777487.png
+2025-09-24 17:56:27 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:56:27 upload.php - FILES: {"image":{"name":"silueta_ana_2.png","full_path":"silueta_ana_2.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\phpD1C0.tmp","error":0,"size":6601}}
+2025-09-24 17:56:27 upload.php - fileName: silueta_ana_2.png, fileSize: 6601, fileType: image/png, fileTmpName: C:\xampp\tmp\phpD1C0.tmp
+2025-09-24 17:56:27 upload.php - newFileName: img_68d414ab330fb6.05261509.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d414ab330fb6.05261509.png
+2025-09-24 17:56:27 upload.php - content length: 6601
+2025-09-24 17:56:27 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d414ab330fb6.05261509.png

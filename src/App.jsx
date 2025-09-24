@@ -1643,7 +1643,6 @@ const AdminPanel = () => {
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Imagen Destacada</h3>
               {localForm.featured_image ? (
                 <div className="space-y-3">
-                  {console.log('About to render image, featured_image:', localForm.featured_image)}
                   <img
                     src={localForm.featured_image.startsWith('http') || localForm.featured_image.startsWith('blob:') ? localForm.featured_image : `${API_BASE_URL}${localForm.featured_image}`}
                     alt="Imagen destacada"
@@ -3176,20 +3175,20 @@ const AdminPanel = () => {
     const [userLiked, setUserLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(0);
 
-    // Cargar estado de likes cuando se carga un post (solo en vista pública)
+    // Cargar estado de likes cuando se carga un post
     useEffect(() => {
-      if (currentPost && !isReadingDraft && isPublicView) {
+      if (currentPost) {
         setLikesCount(currentPost.likes || 0);
-        // Verificar si el usuario ya dio like
-        publicAPI.getPostLikes(currentPost.id).then(response => {
-          setUserLiked(response.user_liked || false);
-        }).catch(error => {
-          console.error('Error checking like status:', error);
-        });
-      } else if (isReadingDraft) {
-        // En modo lectura de borrador, no cargar likes
-        setUserLiked(false);
-        setLikesCount(0);
+        // Verificar si el usuario ya dio like (solo en vista pública)
+        if (!isReadingDraft && isPublicView) {
+          publicAPI.getPostLikes(currentPost.id).then(response => {
+            setUserLiked(response.user_liked || false);
+          }).catch(error => {
+            console.error('Error checking like status:', error);
+          });
+        } else {
+          setUserLiked(false);
+        }
       }
     }, [currentPost?.id, isReadingDraft, isPublicView]);
 
@@ -3484,7 +3483,7 @@ const AdminPanel = () => {
                     <Eye className="w-4 h-4" />
                     {currentPost.views || 0} vistas
                   </span>
-                  {!isReadingDraft && (
+                  {(isPublicView || isReadingDraft) && (
                     <button
                       onClick={handleLikeToggle}
                       className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${
@@ -3515,8 +3514,8 @@ const AdminPanel = () => {
               </div>
             </article>
 
-            {/* Comentarios - Solo mostrar en vista pública */}
-            {!isReadingDraft && currentPost.comments && currentPost.comments.length > 0 && (
+            {/* Comentarios - Mostrar en vista pública y lectura de drafts */}
+            {currentPost.comments && currentPost.comments.length > 0 && (
               <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
                 <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Comentarios ({currentPost.comments_count})</h3>
                 <div className="space-y-6">
@@ -3547,8 +3546,8 @@ const AdminPanel = () => {
               </div>
             )}
 
-            {/* Formulario para agregar comentario - Solo en vista pública */}
-            {!isReadingDraft && (
+            {/* Formulario para agregar comentario - En vista pública y lectura de drafts */}
+            {(isPublicView || isReadingDraft) && (
               <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
                 <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Deja tu comentario</h3>
                 <CommentForm postId={currentPost.id} onCommentAdded={reloadComments} />

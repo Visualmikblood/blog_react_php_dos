@@ -74,3 +74,43 @@
 2025-09-24 17:26:58 create.php - featured_image asignado: /uploads/img_68d40dbbcfeba4.31537554.jpg
 2025-09-24 17:26:58 Post::create - featured_image: /uploads/img_68d40dbbcfeba4.31537554.jpg
 2025-09-24 17:26:58 Post::create - Query ejecutada exitosamente
+2025-09-24 17:36:47 create.php - data received: {"title":"fdg","excerpt":"fgh","content":"fghfgh","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d4100d3644c5.45986414.png","tags":["f"]}
+2025-09-24 17:36:47 create.php - featured_image asignado: /uploads/img_68d4100d3644c5.45986414.png
+2025-09-24 17:36:47 Post::create - featured_image: /uploads/img_68d4100d3644c5.45986414.png
+2025-09-24 17:36:47 Post::create - Query ejecutada exitosamente
+2025-09-24 17:37:19 create.php - data received: {"title":"ghg","excerpt":"ghj","content":"ghjghj","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d4102cb8b9f5.34917229.png","tags":["j"]}
+2025-09-24 17:37:19 create.php - featured_image asignado: /uploads/img_68d4102cb8b9f5.34917229.png
+2025-09-24 17:37:19 Post::create - featured_image: /uploads/img_68d4102cb8b9f5.34917229.png
+2025-09-24 17:37:19 Post::create - Query ejecutada exitosamente
+2025-09-24 17:41:47 create.php - data received: {"title":"miguuguuggug","excerpt":"123","content":"12312313","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d41138745478.06182937.png","tags":["f"]}
+2025-09-24 17:41:47 create.php - featured_image asignado: /uploads/img_68d41138745478.06182937.png
+2025-09-24 17:41:47 Post::create - featured_image: /uploads/img_68d41138745478.06182937.png
+2025-09-24 17:41:47 Post::create - Query ejecutada exitosamente
+2025-09-24 17:42:20 create.php - data received: {"title":"asda","excerpt":"asd","content":"asdasd","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d4115b04fa49.38899869.jpg","tags":["d"]}
+2025-09-24 17:42:20 create.php - featured_image asignado: /uploads/img_68d4115b04fa49.38899869.jpg
+2025-09-24 17:42:20 Post::create - featured_image: /uploads/img_68d4115b04fa49.38899869.jpg
+2025-09-24 17:42:20 Post::create - Query ejecutada exitosamente
+2025-09-24 17:43:46 create.php - data received: {"title":"asd","excerpt":"asda","content":"asdasdad","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d411af565aa5.33954361.jpg","tags":["a"]}
+2025-09-24 17:43:46 create.php - featured_image asignado: /uploads/img_68d411af565aa5.33954361.jpg
+2025-09-24 17:43:46 Post::create - featured_image: /uploads/img_68d411af565aa5.33954361.jpg
+2025-09-24 17:43:46 Post::create - Query ejecutada exitosamente
+2025-09-24 17:45:08 create.php - data received: {"title":"fgh","excerpt":"fgh","content":"fghfgh","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d41202264581.67926905.webp","tags":["h"]}
+2025-09-24 17:45:08 create.php - featured_image asignado: /uploads/img_68d41202264581.67926905.webp
+2025-09-24 17:45:08 Post::create - featured_image: /uploads/img_68d41202264581.67926905.webp
+2025-09-24 17:45:08 Post::create - Query ejecutada exitosamente
+2025-09-24 17:48:16 create.php - data received: {"title":"dfgdf","excerpt":"fg","content":"dfgdfgd","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d412bc9db9b5.81236524.jpg","tags":["g"]}
+2025-09-24 17:48:16 create.php - featured_image asignado: /uploads/img_68d412bc9db9b5.81236524.jpg
+2025-09-24 17:48:16 Post::create - featured_image: /uploads/img_68d412bc9db9b5.81236524.jpg
+2025-09-24 17:48:16 Post::create - Query ejecutada exitosamente
+2025-09-24 17:49:07 create.php - data received: {"title":"dd","excerpt":"dd","content":"ddd","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d412f15660e8.84270401.jpg","tags":["d"]}
+2025-09-24 17:49:07 create.php - featured_image asignado: /uploads/img_68d412f15660e8.84270401.jpg
+2025-09-24 17:49:07 Post::create - featured_image: /uploads/img_68d412f15660e8.84270401.jpg
+2025-09-24 17:49:07 Post::create - Query ejecutada exitosamente
+2025-09-24 17:53:13 create.php - data received: {"title":"sdf","excerpt":"sdf","content":"sdfsdf","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d413e5d1c244.97777487.png","tags":[]}
+2025-09-24 17:53:13 create.php - featured_image asignado: /uploads/img_68d413e5d1c244.97777487.png
+2025-09-24 17:53:13 Post::create - featured_image: /uploads/img_68d413e5d1c244.97777487.png
+2025-09-24 17:53:13 Post::create - Query ejecutada exitosamente
+2025-09-24 17:56:29 create.php - data received: {"title":"sdf","excerpt":"sdf","content":"sdfsfd","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d414ab330fb6.05261509.png","tags":["f"]}
+2025-09-24 17:56:29 create.php - featured_image asignado: /uploads/img_68d414ab330fb6.05261509.png
+2025-09-24 17:56:29 Post::create - featured_image: /uploads/img_68d414ab330fb6.05261509.png
+2025-09-24 17:56:29 Post::create - Query ejecutada exitosamente
