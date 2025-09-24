@@ -478,3 +478,9 @@
 2025-09-24 18:58:27 upload.php - newFileName: img_68d423333beb83.65133600.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d423333beb83.65133600.jpg
 2025-09-24 18:58:27 upload.php - content length: 940579
 2025-09-24 18:58:27 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d423333beb83.65133600.jpg
+2025-09-24 19:25:01 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 19:25:01 upload.php - FILES: {"image":{"name":"fer_para_veo_2_prompt.jpg","full_path":"fer_para_veo_2_prompt.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\phpE380.tmp","error":0,"size":489396}}
+2025-09-24 19:25:01 upload.php - fileName: fer_para_veo_2_prompt.jpg, fileSize: 489396, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\phpE380.tmp
+2025-09-24 19:25:01 upload.php - newFileName: img_68d4296d6c2fe6.28693248.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d4296d6c2fe6.28693248.jpg
+2025-09-24 19:25:01 upload.php - content length: 489396
+2025-09-24 19:25:01 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d4296d6c2fe6.28693248.jpg

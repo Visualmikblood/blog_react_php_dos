@@ -506,16 +506,16 @@ export const settingsAPI = {
   },
 
   update: (settingsData) => {
-    const formData = new FormData();
-    formData.append('action', 'update');
-    formData.append('settings', JSON.stringify(settingsData));
-
     return fetch(`${API_BASE_URL}/admin/settings/manage.php`, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
       },
-      body: formData
+      body: JSON.stringify({
+        action: 'update',
+        settings: settingsData
+      })
     }).then(response => {
       if (!response.ok) {
         return response.json().then(errorData => {

@@ -201,6 +201,7 @@ function handleUpdateUser($db) {
     $role = isset($data->role) ? $data->role : 'user';
     $bio = isset($data->bio) ? Helpers::sanitizeInput($data->bio) : null;
     $avatar = isset($data->avatar) ? $data->avatar : null;
+    $password = isset($data->password) ? password_hash($data->password, PASSWORD_DEFAULT) : null;
 
     // Verificar que el usuario existe
     $check_query = "SELECT id FROM users WHERE id = :id";
@@ -227,14 +228,28 @@ function handleUpdateUser($db) {
         return;
     }
 
-    $query = "UPDATE users SET name = :name, email = :email, role = :role, bio = :bio, avatar = :avatar WHERE id = :id";
+    // Construir query dinámicamente
+    $set_parts = ["name = :name", "email = :email", "role = :role", "bio = :bio", "avatar = :avatar"];
+    $params = [
+        ':name' => $name,
+        ':email' => $email,
+        ':role' => $role,
+        ':bio' => $bio,
+        ':avatar' => $avatar,
+        ':id' => $id
+    ];
+
+    if ($password !== null) {
+        $set_parts[] = "password = :password";
+        $params[':password'] = $password;
+    }
+
+    $query = "UPDATE users SET " . implode(', ', $set_parts) . " WHERE id = :id";
     $stmt = $db->prepare($query);
-    $stmt->bindParam(':name', $name);
-    $stmt->bindParam(':email', $email);
-    $stmt->bindParam(':role', $role);
-    $stmt->bindParam(':bio', $bio);
-    $stmt->bindParam(':avatar', $avatar);
-    $stmt->bindParam(':id', $id);
+
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
 
     if ($stmt->execute()) {
         http_response_code(200);
@@ -268,7 +283,7 @@ function handleUpdateProfile($db) {
     error_log("handleUpdateProfile - avatar received: " . $avatar);
 
     // Verificar que el usuario existe
-    $check_query = "SELECT id FROM users WHERE id = :id";
+    $check_query = "SELECT id, password FROM users WHERE id = :id";
     $check_stmt = $db->prepare($check_query);
     $check_stmt->bindParam(':id', $userId);
     $check_stmt->execute();
@@ -278,6 +293,8 @@ function handleUpdateProfile($db) {
         echo json_encode(array("message" => "Usuario no encontrado."));
         return;
     }
+
+    $user = $check_stmt->fetch(PDO::FETCH_ASSOC);
 
     // Verificar que el email no existe (excepto para el mismo usuario)
     $email_check_query = "SELECT id FROM users WHERE email = :email AND id != :id";
@@ -292,13 +309,38 @@ function handleUpdateProfile($db) {
         return;
     }
 
-    $query = "UPDATE users SET name = :name, email = :email, bio = :bio, avatar = :avatar WHERE id = :id";
+    // Manejar cambio de contraseña si se proporciona
+    $password = null;
+    if (isset($data->current_password) && isset($data->new_password)) {
+        if (!password_verify($data->current_password, $user['password'])) {
+            http_response_code(400);
+            echo json_encode(array("message" => "La contraseña actual es incorrecta."));
+            return;
+        }
+        $password = password_hash($data->new_password, PASSWORD_DEFAULT);
+    }
+
+    // Construir query dinámicamente
+    $set_parts = ["name = :name", "email = :email", "bio = :bio", "avatar = :avatar"];
+    $params = [
+        ':name' => $name,
+        ':email' => $email,
+        ':bio' => $bio,
+        ':avatar' => $avatar,
+        ':id' => $userId
+    ];
+
+    if ($password !== null) {
+        $set_parts[] = "password = :password";
+        $params[':password'] = $password;
+    }
+
+    $query = "UPDATE users SET " . implode(', ', $set_parts) . " WHERE id = :id";
     $stmt = $db->prepare($query);
-    $stmt->bindParam(':name', $name);
-    $stmt->bindParam(':email', $email);
-    $stmt->bindParam(':bio', $bio);
-    $stmt->bindParam(':avatar', $avatar);
-    $stmt->bindParam(':id', $userId);
+
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
 
     if ($stmt->execute()) {
         // Obtener los datos actualizados del usuario

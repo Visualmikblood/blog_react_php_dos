@@ -234,6 +234,7 @@ const AdminPanel = () => {
   const [comments, setComments] = useState([]);
   const [users, setUsers] = useState([]);
   const [settings, setSettings] = useState({});
+  const [siteSettings, setSiteSettings] = useState({});
 
   useEffect(() => {
     // Verificar si ya hay un token guardado
@@ -378,6 +379,21 @@ const AdminPanel = () => {
           total_comments: 38,
           total_categories: 4,
           total_authors: 2
+        });
+      }
+
+      // Cargar configuraciones del sitio
+      try {
+        const settingsResponse = await settingsAPI.getAll();
+        if (settingsResponse.settings) {
+          setSiteSettings(settingsResponse.settings);
+        }
+      } catch (error) {
+        console.error('Error loading site settings:', error);
+        // Configuraciones por defecto
+        setSiteSettings({
+          site_name: { value: 'ModernBlog', type: 'string' },
+          site_description: { value: 'Un blog moderno construido con React y PHP', type: 'string' }
         });
       }
     } catch (error) {
@@ -2621,6 +2637,21 @@ const AdminPanel = () => {
                   </div>
                 )}
 
+                {editingUser && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Nueva Contraseña (opcional)
+                    </label>
+                    <input
+                      type="password"
+                      value={userForm.password}
+                      onChange={(e) => setUserForm(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Dejar vacío para mantener la actual"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Rol
@@ -2731,7 +2762,29 @@ const AdminPanel = () => {
 
     const handleUpdateProfile = async (e) => {
       e.preventDefault();
-      await updateProfile(localProfileData);
+
+      // Preparar datos para enviar
+      const profileData = {
+        name: localProfileData.name,
+        email: localProfileData.email,
+        bio: localProfileData.bio,
+        avatar: localProfileData.avatar
+      };
+
+      // Agregar campos de contraseña si están presentes
+      if (localProfileData.current_password && localProfileData.new_password) {
+        profileData.current_password = localProfileData.current_password;
+        profileData.new_password = localProfileData.new_password;
+      }
+
+      await updateProfile(profileData);
+
+      // Limpiar campos de contraseña después de actualizar
+      setLocalProfileData(prev => ({
+        ...prev,
+        current_password: '',
+        new_password: ''
+      }));
     };
 
     const handleAvatarUpload = async (e) => {
@@ -2870,6 +2923,37 @@ const AdminPanel = () => {
              </div>
            </div>
 
+           {/* Sección para cambiar contraseña */}
+           <div className="border-t border-gray-200 dark:border-gray-600 pt-6">
+             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Cambiar Contraseña</h3>
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                   Contraseña Actual
+                 </label>
+                 <input
+                   type="password"
+                   value={localProfileData.current_password || ''}
+                   onChange={(e) => setLocalProfileData(prev => ({ ...prev, current_password: e.target.value }))}
+                   placeholder="Ingresa tu contraseña actual"
+                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                 />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                   Nueva Contraseña
+                 </label>
+                 <input
+                   type="password"
+                   value={localProfileData.new_password || ''}
+                   onChange={(e) => setLocalProfileData(prev => ({ ...prev, new_password: e.target.value }))}
+                   placeholder="Ingresa tu nueva contraseña"
+                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                 />
+               </div>
+             </div>
+           </div>
+
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-600">
               <button
                 type="button"
@@ -2894,7 +2978,7 @@ const AdminPanel = () => {
   };
 
   // Vista de Configuración
-  const SettingsView = () => {
+  const SettingsView = ({ setSiteSettings }) => {
     const [settingsForm, setSettingsForm] = useState({});
     const [settingsData, setSettingsData] = useState({});
     const [hasLoaded, setHasLoaded] = useState(false);
@@ -2943,8 +3027,13 @@ const AdminPanel = () => {
     const handleSaveSettings = async () => {
       setIsLoading(true);
       try {
-        await settingsAPI.update({ settings: settingsForm });
+        await settingsAPI.update(settingsForm);
         showNotification('Configuración guardada exitosamente');
+        // Recargar settings y actualizar estado global
+        const response = await settingsAPI.getAll();
+        if (response.settings) {
+          setSiteSettings(response.settings);
+        }
         await loadSettings();
       } catch (error) {
         console.error('Error saving settings:', error);
@@ -3684,7 +3773,7 @@ const AdminPanel = () => {
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
                 <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  ModernBlog
+                  {siteSettings.site_name?.value || 'ModernBlog'}
                 </h1>
                 <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mt-1 hidden sm:block">
                   Descubre artículos interesantes sobre tecnología y desarrollo
@@ -3856,7 +3945,7 @@ const AdminPanel = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
-            ModernBlog
+            {siteSettings.site_name?.value || 'ModernBlog'}
           </h1>
           <p className="text-gray-600 mb-8">Sistema de gestión de contenido moderno</p>
 
@@ -3995,7 +4084,7 @@ const AdminPanel = () => {
 
           {currentView === 'profile' && <ProfileView />}
 
-          {currentView === 'settings' && <SettingsView />}
+          {currentView === 'settings' && <SettingsView setSiteSettings={setSiteSettings} />}
         </main>
       </div>
 

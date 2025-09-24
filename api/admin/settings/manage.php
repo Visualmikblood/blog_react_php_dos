@@ -17,7 +17,7 @@ if ($method === 'OPTIONS') {
 }
 
 // Verificar autenticación y permisos de admin
-$headers = apache_request_headers();
+$headers = getallheaders();
 if (!isset($headers['Authorization'])) {
     http_response_code(401);
     echo json_encode(array("message" => "Token de autorización requerido."));
@@ -49,6 +49,9 @@ try {
         case 'GET':
             handleGetSettings($db);
             break;
+        case 'POST':
+            handlePostSettings($db);
+            break;
         case 'PUT':
             handleUpdateSettings($db);
             break;
@@ -79,6 +82,25 @@ function handleGetSettings($db) {
     echo json_encode(["settings" => $settings]);
 }
 
+function handlePostSettings($db) {
+    $data = json_decode(file_get_contents("php://input"));
+
+    if (!isset($data->action)) {
+        http_response_code(400);
+        echo json_encode(array("message" => "Acción requerida."));
+        return;
+    }
+
+    switch ($data->action) {
+        case 'update':
+            handleUpdateSettings($db);
+            break;
+        default:
+            http_response_code(400);
+            echo json_encode(array("message" => "Acción no válida."));
+    }
+}
+
 function handleUpdateSettings($db) {
     $data = json_decode(file_get_contents("php://input"));
 
@@ -94,10 +116,11 @@ function handleUpdateSettings($db) {
     foreach ($data->settings as $key => $setting) {
         try {
             $query = "UPDATE site_settings
-                     SET setting_value = :value, updated_at = NOW()
-                     WHERE setting_key = :key";
+                      SET setting_value = :value, updated_at = NOW()
+                      WHERE setting_key = :key";
             $stmt = $db->prepare($query);
-            $stmt->bindParam(':value', $setting->value);
+            $value = is_object($setting) ? $setting->value : $setting;
+            $stmt->bindParam(':value', $value);
             $stmt->bindParam(':key', $key);
 
             if ($stmt->execute()) {
