@@ -114,3 +114,7 @@
 2025-09-24 17:56:29 create.php - featured_image asignado: /uploads/img_68d414ab330fb6.05261509.png
 2025-09-24 17:56:29 Post::create - featured_image: /uploads/img_68d414ab330fb6.05261509.png
 2025-09-24 17:56:29 Post::create - Query ejecutada exitosamente
+2025-09-24 18:10:35 create.php - data received: {"title":"vistas","excerpt":"vistas","content":"vistas","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d417f9126fe0.87334006.png","tags":["d"]}
+2025-09-24 18:10:35 create.php - featured_image asignado: /uploads/img_68d417f9126fe0.87334006.png
+2025-09-24 18:10:35 Post::create - featured_image: /uploads/img_68d417f9126fe0.87334006.png
+2025-09-24 18:10:35 Post::create - Query ejecutada exitosamente

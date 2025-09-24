@@ -454,3 +454,15 @@
 2025-09-24 18:07:52 upload.php - newFileName: img_68d41758c842a2.84232211.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d41758c842a2.84232211.jpg
 2025-09-24 18:07:52 upload.php - content length: 14169
 2025-09-24 18:07:52 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d41758c842a2.84232211.jpg
+2025-09-24 18:10:33 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 18:10:33 upload.php - FILES: {"image":{"name":"plugins_borrados_wordpess_fer_joquer.png","full_path":"plugins_borrados_wordpess_fer_joquer.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\phpB9E6.tmp","error":0,"size":247236}}
+2025-09-24 18:10:33 upload.php - fileName: plugins_borrados_wordpess_fer_joquer.png, fileSize: 247236, fileType: image/png, fileTmpName: C:\xampp\tmp\phpB9E6.tmp
+2025-09-24 18:10:33 upload.php - newFileName: img_68d417f9126fe0.87334006.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d417f9126fe0.87334006.png
+2025-09-24 18:10:33 upload.php - content length: 247236
+2025-09-24 18:10:33 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d417f9126fe0.87334006.png
+2025-09-24 18:23:25 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 18:23:25 upload.php - FILES: {"image":{"name":"escala.png","full_path":"escala.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php8158.tmp","error":0,"size":3284078}}
+2025-09-24 18:23:25 upload.php - fileName: escala.png, fileSize: 3284078, fileType: image/png, fileTmpName: C:\xampp\tmp\php8158.tmp
+2025-09-24 18:23:25 upload.php - newFileName: img_68d41afd0d52b9.04355245.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d41afd0d52b9.04355245.png
+2025-09-24 18:23:25 upload.php - content length: 3284078
+2025-09-24 18:23:25 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d41afd0d52b9.04355245.png
