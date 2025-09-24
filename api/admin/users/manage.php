@@ -22,7 +22,7 @@ if ($method === 'OPTIONS') {
 }
 
 // Verificar autenticación y permisos de admin
-$headers = apache_request_headers();
+$headers = getallheaders();
 if (!isset($headers['Authorization'])) {
     http_response_code(401);
     echo json_encode(array("message" => "Token de autorización requerido."));

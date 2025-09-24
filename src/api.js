@@ -416,20 +416,13 @@ export const usersAPI = {
   },
 
   update: (userData) => {
-    const formData = new FormData();
-    formData.append('action', 'update');
-    Object.keys(userData).forEach(key => {
-      if (userData[key] !== null && userData[key] !== undefined) {
-        formData.append(key, userData[key]);
-      }
-    });
-
     return fetch(`${API_BASE_URL}/admin/users/manage.php`, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
       },
-      body: formData
+      body: JSON.stringify(userData)
     }).then(response => {
       if (!response.ok) {
         return response.json().then(errorData => {
@@ -466,31 +459,6 @@ export const usersAPI = {
         'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
       },
       body: JSON.stringify(userData)
-    }).then(response => {
-      if (!response.ok) {
-        return response.json().then(errorData => {
-          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        });
-      }
-      return response.json();
-    });
-  },
-
-  update: (userData) => {
-    const formData = new FormData();
-    formData.append('action', 'update');
-    Object.keys(userData).forEach(key => {
-      if (userData[key] !== null && userData[key] !== undefined) {
-        formData.append(key, userData[key]);
-      }
-    });
-
-    return fetch(`${API_BASE_URL}/admin/users/manage.php`, {
-      method: 'POST',
-      headers: {
-        'Authorization': localStorage.getItem('auth_token') ? `Bearer ${localStorage.getItem('auth_token')}` : undefined
-      },
-      body: formData
     }).then(response => {
       if (!response.ok) {
         return response.json().then(errorData => {

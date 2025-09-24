@@ -442,3 +442,15 @@
 2025-09-24 17:56:27 upload.php - newFileName: img_68d414ab330fb6.05261509.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d414ab330fb6.05261509.png
 2025-09-24 17:56:27 upload.php - content length: 6601
 2025-09-24 17:56:27 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d414ab330fb6.05261509.png
+2025-09-24 18:01:36 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 18:01:36 upload.php - FILES: {"image":{"name":"logo_chicago_editado.png","full_path":"logo_chicago_editado.png","type":"image\/png","tmp_name":"C:\\xampp\\tmp\\php88A9.tmp","error":0,"size":594290}}
+2025-09-24 18:01:36 upload.php - fileName: logo_chicago_editado.png, fileSize: 594290, fileType: image/png, fileTmpName: C:\xampp\tmp\php88A9.tmp
+2025-09-24 18:01:36 upload.php - newFileName: img_68d415e02e3165.69007973.png, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d415e02e3165.69007973.png
+2025-09-24 18:01:36 upload.php - content length: 594290
+2025-09-24 18:01:36 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d415e02e3165.69007973.png
+2025-09-24 18:07:52 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 18:07:52 upload.php - FILES: {"image":{"name":"playa_2.jpg","full_path":"playa_2.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php47EB.tmp","error":0,"size":14169}}
+2025-09-24 18:07:52 upload.php - fileName: playa_2.jpg, fileSize: 14169, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php47EB.tmp
+2025-09-24 18:07:52 upload.php - newFileName: img_68d41758c842a2.84232211.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d41758c842a2.84232211.jpg
+2025-09-24 18:07:52 upload.php - content length: 14169
+2025-09-24 18:07:52 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d41758c842a2.84232211.jpg
