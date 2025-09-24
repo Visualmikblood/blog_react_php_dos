@@ -1088,6 +1088,7 @@ const AdminPanel = () => {
       const [title, setTitle] = useState(localForm.title || '');
       const [excerpt, setExcerpt] = useState(localForm.excerpt || '');
       const [content, setContent] = useState(localForm.content || '');
+      // Remover tagsInput, volver al manejo original pero corregido
 
       useEffect(() => {
         setTitle(localForm.title || '');
@@ -1101,13 +1102,11 @@ const AdminPanel = () => {
         setContent(localForm.content || '');
       }, [localForm.content]);
 
-      const featuredImageRef = useRef(localForm.featured_image);
+      // Remover el useEffect de tagsInput
 
-      useEffect(() => {
-        featuredImageRef.current = localForm.featured_image;
-      }, [localForm.featured_image]);
+      // Remover la referencia ya que usaremos solo el estado
 
-      const handleTagsChange = useCallback(() => {
+      const handleTagsBlur = useCallback(() => {
         if (tagsRef.current) {
           const tags = tagsRef.current.value.split(',').map(tag => tag.trim()).filter(tag => tag);
           setLocalForm(prev => ({ ...prev, tags }));
@@ -1129,8 +1128,6 @@ const AdminPanel = () => {
       const file = e.target.files[0];
       if (!file) return;
 
-      // console.log('handleImageUpload - file selected:', file.name, 'type:', file.type, 'size:', file.size);
-
       // Validar tipo de archivo
       if (!file.type.startsWith('image/')) {
         showNotification('Por favor selecciona un archivo de imagen válido', 'error');
@@ -1145,30 +1142,19 @@ const AdminPanel = () => {
 
       // Mostrar vista previa local inmediatamente
       const previewUrl = URL.createObjectURL(file);
-      // console.log('handleImageUpload - setting local preview:', previewUrl);
-      // No actualizar localForm con preview para evitar re-renders
 
       setIsLoading(true);
       try {
         const formData = new FormData();
         formData.append('image', file);
 
-        // console.log('Subiendo imagen...');
         const response = await uploadAPI.uploadImage(formData);
-        // console.log('Imagen subida exitosamente:', response.image_url);
 
         // Reemplazar la vista previa local con la URL del servidor
         URL.revokeObjectURL(previewUrl); // Liberar memoria
-        // console.log('handleImageUpload - replacing with server URL:', response.image_url);
-        setLocalForm(prev => {
-          const newForm = { ...prev, featured_image: response.image_url };
-          // console.log('handleImageUpload - localForm updated to:', newForm);
-          return newForm;
-        });
-        // Actualizar la ref y localStorage inmediatamente
-        featuredImageRef.current = response.image_url;
+        setLocalForm(prev => ({ ...prev, featured_image: response.image_url }));
+        // Guardar en localStorage para persistencia
         localStorage.setItem('temp_featured_image', response.image_url);
-        // console.log('handleImageUpload - featuredImageRef updated to:', response.image_url);
 
         showNotification('Imagen subida exitosamente');
       } catch (error) {
@@ -1183,9 +1169,6 @@ const AdminPanel = () => {
     }, []);
 
     const handleSavePost = async () => {
-      // console.log('handleSavePost - localForm at start:', localForm);
-      // console.log('handleSavePost - localForm.featured_image at start:', localForm.featured_image);
-
       // Obtener valores actuales del estado local
       const currentTitle = title || '';
       const currentExcerpt = excerpt || '';
@@ -1206,9 +1189,9 @@ const AdminPanel = () => {
       setIsLoading(true);
 
       try {
-        // Obtener imagen de localStorage o ref
+        // Obtener imagen del estado actual o localStorage como respaldo
         const tempImage = localStorage.getItem('temp_featured_image');
-        const finalImage = tempImage || featuredImageRef.current || '';
+        const finalImage = editorLocalForm.featured_image || tempImage || '';
 
         const postData = {
           title: currentTitle.trim(),
@@ -1220,11 +1203,6 @@ const AdminPanel = () => {
           tags: Array.isArray(editorLocalForm.tags) ? editorLocalForm.tags.filter(tag => tag.trim() !== '') : []
         };
 
-        // console.log('handleSavePost - Datos a enviar:', postData);
-        // console.log('handleSavePost - tempImage:', tempImage);
-        // console.log('handleSavePost - featuredImageRef.current:', featuredImageRef.current);
-        // console.log('handleSavePost - finalImage:', finalImage);
-
         // Limpiar localStorage después de usarlo
         if (tempImage) {
           localStorage.removeItem('temp_featured_image');
@@ -1233,13 +1211,11 @@ const AdminPanel = () => {
         if (editorForm.id) {
           // Actualizar post existente
           postData.id = editorForm.id;
-          // console.log('Actualizando post existente con ID:', postData.id);
           await postsAPI.update(postData);
           setSaveStatus('saved');
           showNotification('Artículo actualizado exitosamente');
         } else {
           // Crear nuevo post
-          // console.log('Creando nuevo post');
           await postsAPI.create(postData);
           setSaveStatus('saved');
           showNotification('Artículo creado exitosamente');
@@ -1500,14 +1476,10 @@ const AdminPanel = () => {
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Imagen Destacada</h3>
               {localForm.featured_image ? (
                 <div className="space-y-3">
-                  {console.log('About to render image, featured_image:', localForm.featured_image)}
                   <img
                     src={localForm.featured_image.startsWith('http') || localForm.featured_image.startsWith('blob:') ? localForm.featured_image : `${API_BASE_URL}${localForm.featured_image}`}
                     alt="Imagen destacada"
                     className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
-                    // onLoad={() => console.log('Imagen cargada correctamente')}
-                    // onError={(e) => console.log('Error cargando imagen:', e.target.src)}
-                    // ref={(img) => { if (img) console.log('Rendering image with src:', img.src); }}
                   />
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -1585,8 +1557,8 @@ const AdminPanel = () => {
                 ref={tagsRef}
                 type="text"
                 placeholder="Agregar tags separados por comas"
-                value={Array.isArray(localForm.tags) ? localForm.tags.join(', ') : ''}
-                onChange={(e) => setLocalForm(prev => ({ ...prev, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag) }))}
+                defaultValue={Array.isArray(localForm.tags) ? localForm.tags.join(', ') : ''}
+                onBlur={handleTagsBlur}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
               />
             </div>
@@ -2464,6 +2436,7 @@ const AdminPanel = () => {
       avatar: ''
     };
 
+
     const [localProfileData, setLocalProfileData] = useState(initialProfileData);
 
     useEffect(() => {
@@ -2487,7 +2460,7 @@ const AdminPanel = () => {
     const handleUpdateProfile = async (e) => {
       e.preventDefault();
       setIsLoading(true);
-  
+
       try {
         const response = await usersAPI.updateProfile(localProfileData);
         if (response.user) {

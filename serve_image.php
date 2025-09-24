@@ -14,9 +14,14 @@ if ($request_method === 'OPTIONS') {
     exit();
 }
 
-// Verificar si la petición es para /uploads/
-if (strpos($request_uri, '/uploads/') === 0) {
-    $file_path = __DIR__ . $request_uri;
+// Verificar si la petición es para /uploads/ o /api/uploads/
+if (strpos($request_uri, '/uploads/') === 0 || strpos($request_uri, '/api/uploads/') === 0) {
+    // Normalizar la ruta para /api/uploads/
+    if (strpos($request_uri, '/api/uploads/') === 0) {
+        $file_path = __DIR__ . '/api' . str_replace('/api/uploads/', '/uploads/', $request_uri);
+    } else {
+        $file_path = __DIR__ . $request_uri;
+    }
 
     // Verificar que el archivo existe
     if (file_exists($file_path)) {

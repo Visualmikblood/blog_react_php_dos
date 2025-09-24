@@ -265,6 +265,8 @@ function handleUpdateProfile($db) {
     $bio = isset($data->bio) ? Helpers::sanitizeInput($data->bio) : null;
     $avatar = isset($data->avatar) ? $data->avatar : null;
 
+    error_log("handleUpdateProfile - avatar received: " . $avatar);
+
     // Verificar que el usuario existe
     $check_query = "SELECT id FROM users WHERE id = :id";
     $check_stmt = $db->prepare($check_query);
@@ -305,6 +307,8 @@ function handleUpdateProfile($db) {
         $select_stmt->bindParam(':id', $userId);
         $select_stmt->execute();
         $updatedUser = $select_stmt->fetch(PDO::FETCH_ASSOC);
+
+        error_log("handleUpdateProfile - avatar saved in DB: " . $updatedUser['avatar']);
 
         http_response_code(200);
         echo json_encode(array(

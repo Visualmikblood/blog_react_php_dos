@@ -1,0 +1,22 @@
+2025-09-24 00:40:43 create.php - data received: {"title":"miguleeeeleelel","excerpt":"angellll","content":"asdasdasd","category_id":null,"status":"published","featured_image":"\/uploads\/img_68d321e41b7eb6.49793748.jpg","tags":["as"]}
+2025-09-24 00:40:43 create.php - featured_image asignado: /uploads/img_68d321e41b7eb6.49793748.jpg
+2025-09-24 00:40:43 Post::create - featured_image: /uploads/img_68d321e41b7eb6.49793748.jpg
+2025-09-24 00:40:43 Post::create - Query ejecutada exitosamente
+2025-09-24 10:45:29 Post::create - featured_image: /uploads/img_68ce7e89c148b5.66211889.jpg
+2025-09-24 10:45:29 Post::create - Query ejecutada exitosamente
+2025-09-24 10:53:49 create.php - data received: {"title":"dfg","excerpt":"dfg","content":"dfgdfg","category_id":"39","status":"published","featured_image":"\/uploads\/img_68d3b199cde4c0.29493870.jpg","tags":[]}
+2025-09-24 10:53:49 create.php - featured_image asignado: /uploads/img_68d3b199cde4c0.29493870.jpg
+2025-09-24 10:53:49 Post::create - featured_image: /uploads/img_68d3b199cde4c0.29493870.jpg
+2025-09-24 10:53:49 Post::create - Query ejecutada exitosamente
+2025-09-24 10:56:33 create.php - data received: {"title":"gg","excerpt":"gg","content":"ggg","category_id":"39","status":"published","featured_image":"\/uploads\/img_68d3b23d5f6f46.76880558.jpg","tags":[]}
+2025-09-24 10:56:33 create.php - featured_image asignado: /uploads/img_68d3b23d5f6f46.76880558.jpg
+2025-09-24 10:56:33 Post::create - featured_image: /uploads/img_68d3b23d5f6f46.76880558.jpg
+2025-09-24 10:56:33 Post::create - Query ejecutada exitosamente
+2025-09-24 11:04:18 create.php - data received: {"title":"sdfs","excerpt":"sdfsdf","content":"sdfsfd","category_id":"39","status":"published","featured_image":"\/api\/uploads\/img_68d3b40dedc301.44603122.png","tags":[]}
+2025-09-24 11:04:18 create.php - featured_image asignado: /api/uploads/img_68d3b40dedc301.44603122.png
+2025-09-24 11:04:18 Post::create - featured_image: /api/uploads/img_68d3b40dedc301.44603122.png
+2025-09-24 11:04:18 Post::create - Query ejecutada exitosamente
+2025-09-24 11:07:36 create.php - data received: {"title":"mig","excerpt":"mig","content":"mig","category_id":"39","status":"published","featured_image":"\/uploads\/img_68d3b4d00d5505.41059258.jpg","tags":["asdfsf"]}
+2025-09-24 11:07:36 create.php - featured_image asignado: /uploads/img_68d3b4d00d5505.41059258.jpg
+2025-09-24 11:07:36 Post::create - featured_image: /uploads/img_68d3b4d00d5505.41059258.jpg
+2025-09-24 11:07:36 Post::create - Query ejecutada exitosamente

@@ -1,7 +1,7 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 include_once __DIR__ . '/../../config/database.php';
@@ -47,6 +47,7 @@ if ($method !== 'POST') {
 }
 
 $data = json_decode(file_get_contents("php://input"));
+file_put_contents(__DIR__ . '/../../debug.log', date('Y-m-d H:i:s') . " create.php - data received: " . json_encode($data) . "\n", FILE_APPEND);
 
 if (!isset($data->title) || !isset($data->content)) {
     http_response_code(400);
@@ -63,6 +64,7 @@ try {
     $post->category_id = isset($data->category_id) ? $data->category_id : null;
     $post->author_id = $tokenData['user_id'];
     $post->featured_image = isset($data->featured_image) ? $data->featured_image : null;
+    file_put_contents(__DIR__ . '/../../debug.log', date('Y-m-d H:i:s') . " create.php - featured_image asignado: " . $post->featured_image . "\n", FILE_APPEND);
     $post->status = isset($data->status) ? $data->status : 'draft';
     $post->read_time = Helpers::calculateReadTime($data->content);
 
