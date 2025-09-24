@@ -568,7 +568,7 @@ export const settingsAPI = {
 export const publicAPI = {
   getPosts: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE_URL}/public.php/public/posts?${queryString}`, {
+    return fetch(`${API_BASE_URL}/public/posts?${queryString}`, {
       method: 'GET'
     }).then(response => {
       if (!response.ok) {
@@ -580,7 +580,7 @@ export const publicAPI = {
     });
   },
 
-  getPostById: (postId) => fetch(`${API_BASE_URL}/public.php/public/posts/${postId}`, {
+  getPostById: (postId) => fetch(`${API_BASE_URL}/public/posts/${postId}`, {
     method: 'GET'
   }).then(response => {
     if (!response.ok) {
@@ -591,7 +591,7 @@ export const publicAPI = {
     return response.json();
   }),
 
-  getCategories: () => fetch(`${API_BASE_URL}/public.php/public/categories`, {
+  getCategories: () => fetch(`${API_BASE_URL}/public/categories`, {
     method: 'GET'
   }).then(response => {
     if (!response.ok) {
@@ -603,7 +603,7 @@ export const publicAPI = {
   }),
 
   createComment: (postId, commentData) => {
-    return fetch(`${API_BASE_URL}/public.php/public/posts/${postId}/comments`, {
+    return fetch(`${API_BASE_URL}/public/posts/${postId}/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -620,10 +620,63 @@ export const publicAPI = {
   },
 
   incrementViews: (postId) => {
-    return fetch(`${API_BASE_URL}/public.php/public/posts/${postId}/views`, {
+    return fetch(`${API_BASE_URL}/public/posts/${postId}/views`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
+      }
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
+  },
+
+  likePost: (postId) => {
+    const token = localStorage.getItem('auth_token');
+    return fetch(`${API_BASE_URL}/public/posts/${postId}/likes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : undefined
+      }
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
+  },
+
+  unlikePost: (postId) => {
+    const token = localStorage.getItem('auth_token');
+    return fetch(`${API_BASE_URL}/public/posts/${postId}/likes`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : undefined
+      }
+    }).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        });
+      }
+      return response.json();
+    });
+  },
+
+  getPostLikes: (postId) => {
+    const token = localStorage.getItem('auth_token');
+    return fetch(`${API_BASE_URL}/public/posts/${postId}/likes`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : undefined
       }
     }).then(response => {
       if (!response.ok) {

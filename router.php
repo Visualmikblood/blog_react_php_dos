@@ -5,7 +5,7 @@ $request_method = $_SERVER['REQUEST_METHOD'];
 
 // Manejar CORS para todas las peticiones
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
 // Manejar preflight requests
@@ -13,6 +13,9 @@ if ($request_method === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
+// Debug: mostrar información de la petición
+error_log("Router: URI=$request_uri, METHOD=$request_method");
 
 // Verificar si la petición es para /uploads/
 if (strpos($request_uri, '/uploads/') === 0) {
@@ -43,7 +46,9 @@ if (strpos($request_uri, '/uploads/') === 0) {
 
 // Verificar si la petición es para la API (/api/ o /admin/)
 if (strpos($request_uri, '/api/') === 0 || strpos($request_uri, '/admin/') === 0) {
-    $file_path = __DIR__ . '/api' . $request_uri;
+    // Remover parámetros de query string de la URI
+    $path_only = parse_url($request_uri, PHP_URL_PATH);
+    $file_path = __DIR__ . '/api' . $path_only;
 
     // Verificar que el archivo existe
     if (file_exists($file_path)) {
@@ -54,7 +59,7 @@ if (strpos($request_uri, '/api/') === 0 || strpos($request_uri, '/admin/') === 0
 
     // Si no existe el archivo, devolver 404
     http_response_code(404);
-    echo "API endpoint no encontrado";
+    echo "API endpoint no encontrado: $file_path";
     exit();
 }
 

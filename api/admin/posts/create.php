@@ -6,7 +6,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 include_once __DIR__ . '/../../config/database.php';
 include_once __DIR__ . '/../../models/Post.php';
-include_once '../../utils/helpers.php';
+include_once __DIR__ . '/../../utils/helpers.php';
 
 $database = new Database();
 $db = $database->connect();
