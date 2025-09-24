@@ -62,3 +62,11 @@
 2025-09-24 16:53:18 create.php - featured_image asignado: /uploads/img_68d405dc0e7474.85553465.jpg
 2025-09-24 16:53:18 Post::create - featured_image: /uploads/img_68d405dc0e7474.85553465.jpg
 2025-09-24 16:53:18 Post::create - Query ejecutada exitosamente
+2025-09-24 17:05:28 create.php - data received: {"title":"sdf","excerpt":"sdfsd","content":"sdfsdf","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d408b5735f32.07102780.jpg","tags":["s"]}
+2025-09-24 17:05:28 create.php - featured_image asignado: /uploads/img_68d408b5735f32.07102780.jpg
+2025-09-24 17:05:28 Post::create - featured_image: /uploads/img_68d408b5735f32.07102780.jpg
+2025-09-24 17:05:28 Post::create - Query ejecutada exitosamente
+2025-09-24 17:06:47 create.php - data received: {"title":"sdfsd","excerpt":"sdfsf","content":"sdfsdf","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d40905141b94.71627337.jpg","tags":["f"]}
+2025-09-24 17:06:47 create.php - featured_image asignado: /uploads/img_68d40905141b94.71627337.jpg
+2025-09-24 17:06:47 Post::create - featured_image: /uploads/img_68d40905141b94.71627337.jpg
+2025-09-24 17:06:47 Post::create - Query ejecutada exitosamente

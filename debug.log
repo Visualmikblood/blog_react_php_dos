@@ -280,3 +280,21 @@
 2025-09-24 16:55:18 upload.php - newFileName: img_68d40656bac1e5.73885204.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40656bac1e5.73885204.jpg
 2025-09-24 16:55:18 upload.php - content length: 651336
 2025-09-24 16:55:18 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40656bac1e5.73885204.jpg
+2025-09-24 17:05:25 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:05:25 upload.php - FILES: {"image":{"name":"para_vaga.jpg","full_path":"para_vaga.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php19B0.tmp","error":0,"size":309900}}
+2025-09-24 17:05:25 upload.php - fileName: para_vaga.jpg, fileSize: 309900, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php19B0.tmp
+2025-09-24 17:05:25 upload.php - newFileName: img_68d408b5735f32.07102780.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d408b5735f32.07102780.jpg
+2025-09-24 17:05:25 upload.php - content length: 309900
+2025-09-24 17:05:25 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d408b5735f32.07102780.jpg
+2025-09-24 17:06:04 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:06:04 upload.php - FILES: {"image":{"name":"malwarebytes.jpg","full_path":"malwarebytes.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\phpB17C.tmp","error":0,"size":106405}}
+2025-09-24 17:06:04 upload.php - fileName: malwarebytes.jpg, fileSize: 106405, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\phpB17C.tmp
+2025-09-24 17:06:04 upload.php - newFileName: img_68d408dc4dd0a9.00410644.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d408dc4dd0a9.00410644.jpg
+2025-09-24 17:06:04 upload.php - content length: 106405
+2025-09-24 17:06:04 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d408dc4dd0a9.00410644.jpg
+2025-09-24 17:06:45 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 17:06:45 upload.php - FILES: {"image":{"name":"yfhrg.jpg","full_path":"yfhrg.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php50AB.tmp","error":0,"size":400954}}
+2025-09-24 17:06:45 upload.php - fileName: yfhrg.jpg, fileSize: 400954, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php50AB.tmp
+2025-09-24 17:06:45 upload.php - newFileName: img_68d40905141b94.71627337.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d40905141b94.71627337.jpg
+2025-09-24 17:06:45 upload.php - content length: 400954
+2025-09-24 17:06:45 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d40905141b94.71627337.jpg

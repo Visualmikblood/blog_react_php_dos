@@ -623,7 +623,21 @@ const AdminPanel = () => {
     setIsLoading(true);
     try {
       for (const postId of selectedPosts) {
-        await postsAPI.update({ id: postId, status: newStatus });
+        const post = posts.find(p => p.id === postId);
+        if (post) {
+          const updatedPost = { ...post, status: newStatus };
+          const response = await fetch(`${API_BASE_URL}/admin/posts/update.php`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            body: JSON.stringify(updatedPost)
+          });
+          if (!response.ok) {
+            throw new Error(`Error updating post ${postId}`);
+          }
+        }
       }
       showNotification(`${selectedPosts.length} artículo(s) actualizado(s) a ${newStatus === 'published' ? 'Publicado' : 'Borrador'}`);
       setSelectedPosts([]);
