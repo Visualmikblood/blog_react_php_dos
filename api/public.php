@@ -314,7 +314,7 @@ function handleGetPosts($db) {
             "date" => $row['created_at'],
             "status" => $row['status'],
             "featured_image" => $row['featured_image'],
-            "read_time" => $row['read_time'] ?: '1 min read',
+            "read_time" => $row['read_time'] ?: '1 min de lectura',
             "likes" => (int)$row['likes'],
             "views" => (int)$row['views'],
             "comments_count" => (int)$row['comments_count']
@@ -433,7 +433,7 @@ function handleGetPostById($db, $post_id) {
         "date" => $row['created_at'],
         "status" => $row['status'],
         "featured_image" => $row['featured_image'],
-        "read_time" => $row['read_time'] ?: '1 min read',
+        "read_time" => $row['read_time'] ?: '1 min de lectura',
         "likes" => (int)$row['likes'],
         "views" => (int)$row['views'],
         "comments_count" => (int)$row['comments_count'],

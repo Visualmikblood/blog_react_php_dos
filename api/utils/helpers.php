@@ -30,9 +30,9 @@ class Helpers {
 
         if ($minutes < 1) {
             $seconds = round($minutes * 60);
-            return max(30, $seconds) . ' sec read'; // Mínimo 30 segundos
+            return max(30, $seconds) . ' seg de lectura'; // Mínimo 30 segundos
         } else {
-            return round($minutes) . ' min read';
+            return round($minutes) . ' min de lectura';
         }
     }
 }
