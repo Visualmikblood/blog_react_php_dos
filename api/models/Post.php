@@ -37,7 +37,8 @@ class Post {
 
         // Sanitizar datos
         $this->title = htmlspecialchars(strip_tags($this->title));
-        $this->content = htmlspecialchars(strip_tags($this->content));
+        // Para el contenido, no sanitizar ya que es HTML/markdown escrito por admin de confianza
+        // $this->content = $this->sanitizeContent($this->content);
         $this->excerpt = htmlspecialchars(strip_tags($this->excerpt));
         // Para featured_image, solo sanitizar si no es una URL externa
         if ($this->featured_image && filter_var($this->featured_image, FILTER_VALIDATE_URL)) {
@@ -133,7 +134,8 @@ class Post {
 
         // Sanitizar datos
         $this->title = htmlspecialchars(strip_tags($this->title));
-        $this->content = htmlspecialchars(strip_tags($this->content));
+        // Para el contenido, no sanitizar ya que es HTML/markdown escrito por admin de confianza
+        // $this->content = $this->sanitizeContent($this->content);
         $this->excerpt = htmlspecialchars(strip_tags($this->excerpt));
         // Para featured_image, manejar diferentes tipos de URLs
         if ($this->featured_image) {
@@ -180,5 +182,6 @@ class Post {
 
         return false;
     }
+
 }
 ?>
