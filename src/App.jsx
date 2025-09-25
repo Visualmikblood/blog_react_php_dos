@@ -1401,9 +1401,9 @@ const AdminPanel = () => {
         return;
       }
 
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
+      // Validar tamaño (máximo 20MB)
+      if (file.size > 20 * 1024 * 1024) {
+        showNotification('La imagen es demasiado grande. Máximo 20MB', 'error');
         return;
       }
 
@@ -2818,9 +2818,9 @@ const AdminPanel = () => {
         return;
       }
 
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification('La imagen es demasiado grande. Máximo 5MB', 'error');
+      // Validar tamaño (máximo 20MB)
+      if (file.size > 20 * 1024 * 1024) {
+        showNotification('La imagen es demasiado grande. Máximo 20MB', 'error');
         return;
       }
 

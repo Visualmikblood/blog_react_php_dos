@@ -490,3 +490,9 @@
 2025-09-24 22:28:10 upload.php - newFileName: img_68d4545ac08249.44654536.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d4545ac08249.44654536.jpg
 2025-09-24 22:28:10 upload.php - content length: 1358246
 2025-09-24 22:28:10 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d4545ac08249.44654536.jpg
+2025-09-25 17:52:37 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-25 17:52:37 upload.php - FILES: {"image":{"name":"instagram_miguel_photoshop.jpg","full_path":"instagram_miguel_photoshop.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\php1A59.tmp","error":0,"size":263948}}
+2025-09-25 17:52:37 upload.php - fileName: instagram_miguel_photoshop.jpg, fileSize: 263948, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\php1A59.tmp
+2025-09-25 17:52:37 upload.php - newFileName: img_68d5654545aa31.03807119.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d5654545aa31.03807119.jpg
+2025-09-25 17:52:37 upload.php - content length: 263948
+2025-09-25 17:52:37 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d5654545aa31.03807119.jpg
