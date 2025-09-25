@@ -235,12 +235,16 @@ const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [settings, setSettings] = useState({});
   const [siteSettings, setSiteSettings] = useState({});
+  const [settingsRefreshKey, setSettingsRefreshKey] = useState(0);
 
   useEffect(() => {
     // Verificar si ya hay un token guardado
     const token = localStorage.getItem('auth_token');
     if (token) {
       verifyToken(token);
+    } else {
+      // Cargar configuraciones del sitio para usuarios no autenticados
+      loadPublicSettings();
     }
   }, []);
 
@@ -326,6 +330,23 @@ const AdminPanel = () => {
         email: user.email || '',
         bio: user.bio || '',
         avatar: user.avatar || ''
+      });
+    }
+  };
+
+  // Función para cargar configuraciones públicas (sin autenticación)
+  const loadPublicSettings = async () => {
+    try {
+      const settingsResponse = await settingsAPI.getAll();
+      if (settingsResponse.settings) {
+        setSiteSettings(settingsResponse.settings);
+      }
+    } catch (error) {
+      console.error('Error loading public settings:', error);
+      // Configuraciones por defecto
+      setSiteSettings({
+        site_name: { value: 'ModernBlog', type: 'string' },
+        site_description: { value: 'Un blog moderno construido con React y PHP', type: 'string' }
       });
     }
   };
@@ -2978,7 +2999,7 @@ const AdminPanel = () => {
   };
 
   // Vista de Configuración
-  const SettingsView = ({ setSiteSettings }) => {
+  const SettingsView = ({ setSiteSettings, setSettingsRefreshKey }) => {
     const [settingsForm, setSettingsForm] = useState({});
     const [settingsData, setSettingsData] = useState({});
     const [hasLoaded, setHasLoaded] = useState(false);
@@ -3009,7 +3030,7 @@ const AdminPanel = () => {
     }, [hasLoaded, isLoadingSettings]);
 
     useEffect(() => {
-      if (!hasLoaded && !isLoadingSettings) {
+      if (!hasLoaded && !isLoadingSettings && Object.keys(settingsForm).length === 0) {
         loadSettings();
       }
     }, []); // Solo ejecutar una vez al montar el componente
@@ -3033,8 +3054,16 @@ const AdminPanel = () => {
         const response = await settingsAPI.getAll();
         if (response.settings) {
           setSiteSettings(response.settings);
+          // Actualizar también el estado local del componente
+          setSettingsData(response.settings);
+          const formData = {};
+          Object.keys(response.settings).forEach(key => {
+            formData[key] = { ...response.settings[key] };
+          });
+          setSettingsForm(formData);
+          // Forzar re-render del componente
+          setSettingsRefreshKey(prev => prev + 1);
         }
-        await loadSettings();
       } catch (error) {
         console.error('Error saving settings:', error);
         showNotification('Error al guardar configuración', 'error');
@@ -4084,7 +4113,7 @@ const AdminPanel = () => {
 
           {currentView === 'profile' && <ProfileView />}
 
-          {currentView === 'settings' && <SettingsView setSiteSettings={setSiteSettings} />}
+          {currentView === 'settings' && <SettingsView key={`settings-${settingsRefreshKey}`} setSiteSettings={setSiteSettings} setSettingsRefreshKey={setSettingsRefreshKey} />}
         </main>
       </div>
 

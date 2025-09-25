@@ -122,3 +122,7 @@
 2025-09-24 18:58:37 create.php - featured_image asignado: /uploads/img_68d423333beb83.65133600.jpg
 2025-09-24 18:58:37 Post::create - featured_image: /uploads/img_68d423333beb83.65133600.jpg
 2025-09-24 18:58:37 Post::create - Query ejecutada exitosamente
+2025-09-24 22:28:13 create.php - data received: {"title":"sdf","excerpt":"sdf","content":"dfs","category_id":"9","status":"published","featured_image":"\/uploads\/img_68d4545ac08249.44654536.jpg","tags":["f"]}
+2025-09-24 22:28:13 create.php - featured_image asignado: /uploads/img_68d4545ac08249.44654536.jpg
+2025-09-24 22:28:13 Post::create - featured_image: /uploads/img_68d4545ac08249.44654536.jpg
+2025-09-24 22:28:13 Post::create - Query ejecutada exitosamente

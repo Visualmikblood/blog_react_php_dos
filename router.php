@@ -73,6 +73,7 @@ if (strpos($request_uri, '/public/') === 0) {
     exit();
 }
 
+
 // Para otras rutas, intentar servir archivos estáticos desde el directorio raíz
 $file_path = __DIR__ . $request_uri;
 

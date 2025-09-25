@@ -484,3 +484,9 @@
 2025-09-24 19:25:01 upload.php - newFileName: img_68d4296d6c2fe6.28693248.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d4296d6c2fe6.28693248.jpg
 2025-09-24 19:25:01 upload.php - content length: 489396
 2025-09-24 19:25:01 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d4296d6c2fe6.28693248.jpg
+2025-09-24 22:28:10 upload.php - uploadDir: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/
+2025-09-24 22:28:10 upload.php - FILES: {"image":{"name":"auriculares_rotos_jbl_2024.jpg","full_path":"auriculares_rotos_jbl_2024.jpg","type":"image\/jpeg","tmp_name":"C:\\xampp\\tmp\\phpCAAD.tmp","error":0,"size":1358246}}
+2025-09-24 22:28:10 upload.php - fileName: auriculares_rotos_jbl_2024.jpg, fileSize: 1358246, fileType: image/jpeg, fileTmpName: C:\xampp\tmp\phpCAAD.tmp
+2025-09-24 22:28:10 upload.php - newFileName: img_68d4545ac08249.44654536.jpg, uploadPath: C:\Users\migue\Documents\proyectos_react\blog_react_php_copia\blog_react_php-main\api\admin/../uploads/img_68d4545ac08249.44654536.jpg
+2025-09-24 22:28:10 upload.php - content length: 1358246
+2025-09-24 22:28:10 upload.php - Archivo guardado exitosamente, imageUrl: /uploads/img_68d4545ac08249.44654536.jpg

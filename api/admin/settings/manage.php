@@ -27,13 +27,19 @@ if (!isset($headers['Authorization'])) {
 $token = str_replace('Bearer ', '', $headers['Authorization']);
 try {
     $tokenData = json_decode(base64_decode($token), true);
-    if ($tokenData['exp'] < time()) {
+    if (!$tokenData || !is_array($tokenData)) {
+        http_response_code(401);
+        echo json_encode(array("message" => "Token inválido."));
+        exit();
+    }
+
+    if (!isset($tokenData['exp']) || $tokenData['exp'] < time()) {
         http_response_code(401);
         echo json_encode(array("message" => "Token expirado."));
         exit();
     }
 
-    if ($tokenData['role'] !== 'admin') {
+    if (!isset($tokenData['role']) || $tokenData['role'] !== 'admin') {
         http_response_code(403);
         echo json_encode(array("message" => "Permisos de administrador requeridos."));
         exit();
